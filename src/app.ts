@@ -13,15 +13,16 @@ import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
 import { Server } from 'http';
+import { GenerationController } from './controllers/generation.controller';
 
 export class App {
   public app: express.Application;
   public env: string;
   public port: string | number;
   private server: Server;
+  private generationController: GenerationController;
 
   constructor(routes: Routes[]) {
-    console.log('App constructor', routes);
     this.app = express();
     this.env = NODE_ENV || 'development';
     this.port = PORT || 3000;
@@ -30,6 +31,8 @@ export class App {
     this.initializeRoutes(routes);
     this.initializeSwagger();
     this.initializeErrorHandling();
+
+    this.generationController = new GenerationController();
   }
 
   public listen() {

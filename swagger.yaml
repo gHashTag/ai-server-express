@@ -1,6 +1,8 @@
 tags:
 - name: users
   description: users API
+- name: generation
+  description: Generation API
 
 paths:
 # [GET] users
@@ -103,13 +105,72 @@ paths:
         500:
           description: 'Server Error'
 
+# [POST] generate
+  /generate:
+    post:
+      tags:
+      - generation
+      summary: Generate content
+      parameters:
+      - name: body
+        in: body
+        description: Data for content generation
+        required: true
+        schema:
+          $ref: '#/definitions/GenerateRequest'
+      responses:
+        200:
+          description: Content generated successfully
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                description: The generated content data
+              message:
+                type: string
+                example: text_to_image successful
+        400:
+          description: Invalid action or request data
+        500:
+          description: Server Error
+
 # definitions
 definitions:
+  GenerateRequest:
+    type: object
+    required:
+      - action
+      - data
+    properties:
+      action:
+        type: string
+        example: text_to_image
+        description: The action to perform (e.g., text_to_image, text_to_speech)
+      data:
+        type: object
+        properties:
+          prompt:
+            type: string
+            description: The text prompt for image generation
+          model:
+            type: string
+            description: The model to use for generation
+          telegram_id:
+            type: integer
+            description: Telegram ID of the user
+          text:
+            type: string
+            description: The text to convert to speech
+          voice_id:
+            type: string
+            description: The voice ID to use for speech generation
+
   users:
     type: object
     required:
-        - email
-        - password
+      - email
+      - password
     properties:
       email:
         type: string

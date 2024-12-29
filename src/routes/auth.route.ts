@@ -6,10 +6,12 @@ import { AuthMiddleware } from '@middlewares/auth.middleware';
 import { ValidationMiddleware } from '@middlewares/validation.middleware';
 
 export class AuthRoute implements Routes {
-  public router = Router();
+  public path = '/auth';
+  public router: Router;
   public auth = new AuthController();
 
   constructor() {
+    this.router = Router();
     this.initializeRoutes();
   }
 

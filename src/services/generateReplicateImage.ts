@@ -1,6 +1,7 @@
 import { models, replicate } from '../core/replicate';
 import axios from 'axios';
 import { incrementGeneratedImages, getAspectRatio, savePrompt } from '../core/supabase/ai';
+import { downloadFile } from '@/helpers/downloadFile';
 
 export interface GenerationResult {
   image: string | Buffer;
@@ -61,7 +62,8 @@ export const generateImage = async (prompt: string, model_type: string, telegram
         output = (await replicate.run(modelKey, { input })) as ApiResponse;
         const imageUrl = await processApiResponse(output);
         const prompt_id = await savePrompt(prompt, modelKey, imageUrl, telegram_id);
-        return { image: imageUrl, prompt_id };
+        const image = await downloadFile(imageUrl);
+        return { image, prompt_id };
       } catch (error) {
         console.error(`Попытка ${4 - retries} не удалась:`, error);
         retries--;

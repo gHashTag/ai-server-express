@@ -1,5 +1,5 @@
 import { Bot } from 'grammy';
-import { MyContextWithSession } from '../../utils/types';
+import { MyContextWithSession } from '@/types';
 
 const bot = new Bot<MyContextWithSession>(process.env.BOT_TOKEN || '');
 

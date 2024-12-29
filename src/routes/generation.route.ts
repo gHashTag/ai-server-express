@@ -4,14 +4,20 @@ import { Routes } from '@interfaces/routes.interface';
 
 export class GenerationRoute implements Routes {
   public path = '/generate';
-  public router = Router();
+  public router: Router;
   public generationController = new GenerationController();
 
   constructor() {
+    this.router = Router();
     this.initializeRoutes();
   }
 
   private initializeRoutes() {
-    this.router.post(this.path, this.generationController.generateContent);
+    this.router.post(`${this.path}/text-to-image`, this.generationController.textToImage);
+    this.router.post(`${this.path}/text-to-speech`, this.generationController.textToSpeech);
+    this.router.post(`${this.path}/text-to-video`, this.generationController.textToVideo);
+    this.router.post(`${this.path}/image-to-video`, this.generationController.imageToVideo);
+    this.router.post(`${this.path}/image-to-prompt`, this.generationController.imageToPrompt);
+    this.router.post(`${this.path}/neuro-photo`, this.generationController.neuroPhoto);
   }
 }
