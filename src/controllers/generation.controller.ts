@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { InputFile } from 'grammy';
 import bot from '@/core/bot';
-import { generateImage } from '@/services/generateReplicateImage';
+import { generateImage } from '@/services/generateImage';
 import { generateSpeech } from '@/services/generateSpeech';
 import { generateTextToVideo } from '@/services/generateTextToVideo';
 import { generateImageToVideo } from '@/services/generateImageToVideo';

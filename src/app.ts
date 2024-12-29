@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express from 'express';
+import express, { Application } from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
@@ -16,7 +16,7 @@ import { Server } from 'http';
 import { GenerationController } from './controllers/generation.controller';
 
 export class App {
-  public app: express.Application;
+  public app: Application;
   public env: string;
   public port: string | number;
   private server: Server;
@@ -47,7 +47,13 @@ export class App {
   }
 
   public getServer() {
-    return this.server;
+    return this.app;
+  }
+
+  public close(callback?: () => void) {
+    if (this.server) {
+      this.server.close(callback);
+    }
   }
 
   private initializeMiddlewares() {

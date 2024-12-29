@@ -12,6 +12,14 @@ describe('TEST Users API', () => {
   const route = new UserRoute();
   const app = new App([route]);
 
+  beforeAll(() => {
+    app.listen();
+  });
+
+  afterAll(done => {
+    app.close(done);
+  });
+
   describe('[GET] /users', () => {
     it('response statusCode 200 /findAll', () => {
       const findUser: User[] = UserModel;

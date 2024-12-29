@@ -1,8 +1,10 @@
 import { replicate } from '../core/replicate';
 import { getAspectRatio, savePrompt } from '../core/supabase/ai';
-import { processApiResponse, fetchImage } from './generateReplicateImage';
-import { GenerationResult, ApiResponse } from '@/types';
+
+import { processApiResponse } from '@/helpers/processApiResponse';
+import { GenerationResult, ApiResponse } from '@/interfaces/generate.interface';
 import { supabase } from '@/core/supabase';
+import { fetchImage } from '@/helpers/fetchImage';
 
 export async function generateNeuroImage(prompt: string, telegram_id: number): Promise<GenerationResult | null> {
   console.log('Starting generateNeuroImage with:', { prompt, telegram_id });

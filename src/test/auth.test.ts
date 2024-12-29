@@ -11,6 +11,14 @@ describe('TEST Authorization API', () => {
   const route = new AuthRoute();
   const app = new App([route]);
 
+  beforeAll(() => {
+    app.listen();
+  });
+
+  afterAll(done => {
+    app.close(done);
+  });
+
   describe('[POST] /signup', () => {
     it('response should have the Create userData', () => {
       const userData: User = {
