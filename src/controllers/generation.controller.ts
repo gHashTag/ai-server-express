@@ -7,6 +7,7 @@ import { generateTextToVideo } from '@/services/generateTextToVideo';
 import { generateImageToVideo } from '@/services/generateImageToVideo';
 import { generateImageToPrompt } from '@/services/generateImageToPrompt';
 import { generateNeuroImage } from '@/services/generateNeuroImage';
+import { createAvatarVoice } from '@/services/createAvatarVoice';
 
 export class GenerationController {
   public textToImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -26,6 +27,32 @@ export class GenerationController {
         .catch(error => {
           console.error('Ошибка при генерации изображения:', error);
         });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public createAvatarVoice = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { fileUrl, username, telegram_id, is_ru } = req.body;
+      if (!fileUrl || !username || !telegram_id || !is_ru) {
+        res.status(400).json({ message: 'fileId, username, and telegram_id are required' });
+        return;
+      }
+      res.status(200).json({ message: 'Voice creation started' });
+
+      const voiceId = await createAvatarVoice(fileUrl, username);
+
+      if (voiceId) {
+        console.log('Создание голоса завершено:', voiceId);
+        const message = is_ru ? `Создание голоса завершено: \`${voiceId}\`` : `Voice creation completed: \`${voiceId}\``;
+
+        await bot.api.sendMessage(telegram_id, message, {
+          parse_mode: 'MarkdownV2',
+        });
+      } else {
+        console.error('Ошибка при создании голоса');
+      }
     } catch (error) {
       next(error);
     }
