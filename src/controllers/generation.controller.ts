@@ -8,6 +8,7 @@ import { generateImageToVideo } from '@/services/generateImageToVideo';
 import { generateImageToPrompt } from '@/services/generateImageToPrompt';
 import { generateNeuroImage } from '@/services/generateNeuroImage';
 import { createAvatarVoice } from '@/services/createAvatarVoice';
+import { generateModelTraining } from '@/services/generateModelTraining';
 
 export class GenerationController {
   public textToImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -117,6 +118,35 @@ export class GenerationController {
         })
         .catch(error => {
           console.error('Ошибка при генерации видео:', error);
+        });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public createModelTraining = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { zipUrl, triggerWord, modelName, telegram_id, is_ru } = req.body;
+      if (!zipUrl || !triggerWord || !modelName || !telegram_id || !is_ru) {
+        res.status(400).json({ message: 'zipUrl, triggerWord, modelName, telegram_id, and is_ru are required' });
+        return;
+      }
+      res.status(200).json({ message: 'Model training started' });
+
+      generateModelTraining(zipUrl, triggerWord, modelName, telegram_id)
+        .then(async result => {
+          if (result) {
+            console.log('Генерация модели завершена:', result.model_id);
+            const message = is_ru
+              ? `Тренировка модели завершена. Вы можете воспользоваться командой /neuro_photo.`
+              : `Model training completed. You can use the command /neuro_photo.`;
+            await bot.api.sendMessage(telegram_id, message);
+          } else {
+            console.error('Ошибка при генерации модели.');
+          }
+        })
+        .catch(error => {
+          console.error('Ошибка при генерации модели:', error);
         });
     } catch (error) {
       next(error);

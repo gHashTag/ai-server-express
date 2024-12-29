@@ -20,5 +20,6 @@ export class GenerationRoute implements Routes {
     this.router.post(`${this.path}/image-to-prompt`, this.generationController.imageToPrompt);
     this.router.post(`${this.path}/neuro-photo`, this.generationController.neuroPhoto);
     this.router.post(`${this.path}/create-avatar-voice`, this.generationController.createAvatarVoice);
+    this.router.post(`${this.path}/create-model-training`, this.generationController.createModelTraining);
   }
 }
