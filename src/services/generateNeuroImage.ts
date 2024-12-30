@@ -2,15 +2,32 @@ import { replicate } from '../core/replicate';
 import { getAspectRatio, savePrompt } from '../core/supabase/ai';
 
 import { processApiResponse } from '@/helpers/processApiResponse';
-import { GenerationResult, ApiResponse } from '@/interfaces/generate.interface';
+import { GenerationResult } from '@/interfaces/generate.interface';
 import { supabase } from '@/core/supabase';
-import { fetchImage } from '@/helpers/fetchImage';
+import { downloadFile } from '@/helpers/downloadFile';
+import bot from '@/core/bot';
+import { InputFile } from 'grammy';
+import { pulse } from '@/helpers/pulse';
+import { imageNeuroGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
 
-export async function generateNeuroImage(prompt: string, telegram_id: number): Promise<GenerationResult | null> {
-  console.log('Starting generateNeuroImage with:', { prompt, telegram_id });
+export async function generateNeuroImage(
+  prompt: string,
+  telegram_id: number,
+  username: string,
+  num_images: number,
+  is_ru: boolean,
+): Promise<GenerationResult | null> {
+  console.log('Starting generateNeuroImage with:', { prompt, telegram_id, num_images });
 
   try {
-    // Получаем model_type из базы данных
+    // Проверка баланса для всех изображений
+    const totalCost = imageNeuroGenerationCost * num_images;
+    const balanceCheck = await processBalanceOperation(telegram_id, totalCost, is_ru);
+    if (!balanceCheck.success) {
+      throw new Error(balanceCheck.error);
+    }
+
+    // Получаем настройки модели один раз
     const { data, error } = await supabase
       .from('model_trainings')
       .select('model_url')
@@ -24,18 +41,11 @@ export async function generateNeuroImage(prompt: string, telegram_id: number): P
     }
 
     const model_type = data.model_url;
-    console.log('Got model type:', model_type);
-
     const aspect_ratio = await getAspectRatio(telegram_id);
-    console.log('Got aspect ratio:', aspect_ratio);
-
-    let output: ApiResponse = '';
-    let retries = 3;
-
+    const results: GenerationResult[] = [];
     const input = {
       prompt,
-      negative_prompt:
-        'nsfw, erotic, violence, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry',
+      negative_prompt: 'nsfw, erotic, violence, bad anatomy...',
       num_inference_steps: 28,
       guidance_scale: 7,
       ...(aspect_ratio === '1:1'
@@ -50,55 +60,65 @@ export async function generateNeuroImage(prompt: string, telegram_id: number): P
       aspect_ratio,
     };
 
-    console.log('Created input:', input);
+    // Цикл генерации изображений
+    for (let i = 0; i < num_images; i++) {
+      console.log(`Generating image ${i + 1} of ${num_images}`);
+      bot.api.sendMessage(telegram_id, `Generating image ${i + 1} of ${num_images}`);
 
-    while (retries > 0) {
-      try {
-        console.log('Attempting to run model, attempt:', 4 - retries);
-        // @ts-expect-error Replicate API типы
-        output = await replicate.run(model_type, { input });
-        console.log('Got output from replicate:', output);
+      const output = await replicate.run(model_type, { input });
+      const imageUrl = await processApiResponse(output);
 
-        const imageUrl = await processApiResponse(output);
-        console.log('Processed image URL:', imageUrl);
-
-        if (!imageUrl || imageUrl.endsWith('empty.zip')) {
-          throw new Error(`Invalid image URL: ${imageUrl}`);
-        }
-
-        const imageBuffer = await fetchImage(imageUrl);
-        console.log('Fetched image buffer, size:', imageBuffer.length);
-
-        const prompt_id = await savePrompt(prompt, model_type, imageUrl, telegram_id);
-
-        console.log('Saved prompt with id:', prompt_id);
-
-        if (prompt_id === null) {
-          console.error('Failed to save prompt');
-          return null;
-        }
-
-        console.log('Returning successful result with prompt_id:', prompt_id);
-        return {
-          image: imageBuffer,
-          prompt_id,
-        };
-      } catch (error) {
-        console.error(`Generation attempt ${4 - retries} failed:`, error);
-        retries--;
-        if (retries === 0) throw error;
-        console.log('Waiting before next attempt...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!imageUrl || imageUrl.endsWith('empty.zip')) {
+        console.error(`Failed to generate image ${i + 1}`);
+        continue;
       }
+
+      const image = await downloadFile(imageUrl);
+      const prompt_id = await savePrompt(prompt, model_type, imageUrl, telegram_id);
+
+      if (prompt_id === null) {
+        console.error(`Failed to save prompt for image ${i + 1}`);
+        continue;
+      }
+
+      // Отправляем каждое изображение
+      await bot.api.sendPhoto(telegram_id, new InputFile(image));
+
+      // Сохраняем результат
+      results.push({ image, prompt_id });
+
+      // Отправляем в pulse
+      const pulseImage = Buffer.isBuffer(image) ? `data:image/jpeg;base64,${image.toString('base64')}` : image;
+      await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username);
     }
 
-    throw new Error('All generation attempts exhausted');
+    // Отправляем финальное сообщение после всех изображений
+    await bot.api.sendMessage(
+      telegram_id,
+      is_ru
+        ? `Генерация завершена!\n\nСтоимость: ${totalCost.toFixed(2)} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
+        : `Generation completed!\n\nCost: ${totalCost.toFixed(2)} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '1️⃣', callback_data: `generate_1_${results[0]?.prompt_id}` },
+              { text: '2️⃣', callback_data: `generate_2_${results[0]?.prompt_id}` },
+              { text: '3️⃣', callback_data: `generate_3_${results[0]?.prompt_id}` },
+              { text: '4️⃣', callback_data: `generate_4_${results[0]?.prompt_id}` },
+            ],
+            [
+              { text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt', callback_data: `improve_neuro_photo_${results[0]?.prompt_id}` },
+              { text: is_ru ? '📐 Изменить размер' : '📐 Change size', callback_data: 'change_size' },
+            ],
+          ],
+        },
+      },
+    );
+
+    return results[0] || null;
   } catch (error) {
-    if (error instanceof Error && error.message.includes('NSFW content detected')) {
-      console.error('NSFW контент обнаружен при генерации изображения.');
-    } else {
-      console.error('Ошибка при генерации изображения:', error);
-    }
-    return null;
+    console.error('Error in generateNeuroImage:', error);
+    throw error;
   }
 }

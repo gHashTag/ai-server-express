@@ -9,21 +9,61 @@ import { generateImageToPrompt } from '@/services/generateImageToPrompt';
 import { generateNeuroImage } from '@/services/generateNeuroImage';
 import { createAvatarVoice } from '@/services/createAvatarVoice';
 import { generateModelTraining } from '@/services/generateModelTraining';
+import { imageGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
 
 export class GenerationController {
   public textToImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { prompt, model, telegram_id } = req.body;
-      if (!prompt || !model || !telegram_id) {
-        res.status(400).json({ message: 'Prompt, model, and telegram_id are required' });
+      const { prompt, model, telegram_id, username, is_ru } = req.body;
+      console.log(req.body, 'req.body');
+
+      if (!prompt) {
+        res.status(400).json({ message: 'prompt is required' });
+        return;
+      }
+
+      if (!model) {
+        res.status(400).json({ message: 'model is required' });
+        return;
+      }
+
+      if (!telegram_id) {
+        res.status(400).json({ message: 'telegram_id is required' });
+        return;
+      }
+
+      if (!username) {
+        res.status(400).json({ message: 'username is required' });
+        return;
+      }
+
+      res.status(200).json({ message: 'Processing started' });
+
+      generateImage(prompt, model, telegram_id, username, is_ru)
+        .then(async () => {
+          console.log('Генерация изображения завершена:');
+          await processBalanceOperation(telegram_id, imageGenerationCost, is_ru);
+        })
+        .catch(error => {
+          console.error('Ошибка при генерации изображения:', error);
+        });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public neuroPhoto = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { prompt, telegram_id, username, num_images, is_ru } = req.body;
+      if (!prompt || !telegram_id || !username || !num_images || !is_ru) {
+        res.status(400).json({ message: 'Prompt, telegram_id, username, and is_ru are required' });
         return;
       }
       res.status(200).json({ message: 'Processing started' });
 
-      generateImage(prompt, model, telegram_id)
-        .then(async ({ image }) => {
-          console.log('Генерация изображения завершена:', image);
-          await bot.api.sendPhoto(telegram_id, new InputFile(image));
+      generateNeuroImage(prompt, telegram_id, username, num_images, is_ru)
+        .then(async () => {
+          console.log('Генерация изображения завершена:');
         })
         .catch(error => {
           console.error('Ошибка при генерации изображения:', error);
@@ -147,32 +187,6 @@ export class GenerationController {
         })
         .catch(error => {
           console.error('Ошибка при генерации модели:', error);
-        });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  public neuroPhoto = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { prompt, telegram_id } = req.body;
-      if (!prompt || !telegram_id) {
-        res.status(400).json({ message: 'Prompt and telegram_id are required' });
-        return;
-      }
-      res.status(200).json({ message: 'Processing started' });
-
-      generateNeuroImage(prompt, telegram_id)
-        .then(async result => {
-          if (result) {
-            console.log('Генерация изображения завершена:', result.prompt_id);
-            await bot.api.sendPhoto(telegram_id, new InputFile(result.image));
-          } else {
-            console.error('Ошибка при генерации нейрофото.');
-          }
-        })
-        .catch(error => {
-          console.error('Ошибка при генерации изображения:', error);
         });
     } catch (error) {
       next(error);
