@@ -82,18 +82,9 @@ export class GenerationController {
       }
       res.status(200).json({ message: 'Voice creation started' });
 
-      const voiceId = await createAvatarVoice(fileUrl, username);
+      const voiceId = await createAvatarVoice(fileUrl, telegram_id, username, is_ru);
 
-      if (voiceId) {
-        console.log('Создание голоса завершено:', voiceId);
-        const message = is_ru ? `Создание голоса завершено: \`${voiceId}\`` : `Voice creation completed: \`${voiceId}\``;
-
-        await bot.api.sendMessage(telegram_id, message, {
-          parse_mode: 'MarkdownV2',
-        });
-      } else {
-        console.error('Ошибка при создании голоса');
-      }
+      console.log('Создание голоса завершено:', voiceId);
     } catch (error) {
       next(error);
     }
