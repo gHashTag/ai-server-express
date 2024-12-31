@@ -6,7 +6,7 @@ import { processApiResponse } from '@/helpers/processApiResponse';
 import { pulse } from '@/helpers/pulse';
 import bot from '@/core/bot';
 import { InputFile } from 'grammy';
-import { imageGenerationCost, imageNeuroGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
+import { imageGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
 
 export const generateImage = async (
   prompt: string,

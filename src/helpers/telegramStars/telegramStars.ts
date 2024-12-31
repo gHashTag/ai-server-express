@@ -8,7 +8,7 @@ const promptGenerationCost = 0.048 / starCost;
 const imageGenerationCost = 0.12 / starCost;
 const imageNeuroGenerationCost = 0.12 / starCost;
 const textToVideoCost = 0.99 / starCost;
-const voiceCost = 0.3 / starCost;
+const speechGenerationCost = 0.12 / starCost;
 const textToSpeechCost = 0.12 / starCost;
 const imageToVideoCost = 0.99 / starCost;
 
@@ -26,8 +26,10 @@ export async function processBalanceOperation(telegram_id: number, operationCost
 
     // Проверяем достаточно ли средств
     if (currentBalance < operationCost) {
-      const message = is_ru ? 'Недостаточно средств на балансе' : 'Insufficient funds';
-
+      const message = is_ru
+        ? 'Недостаточно средств на балансе. Пополните баланс вызвав команду /buy.'
+        : 'Insufficient funds. Top up your balance by calling the /buy command.';
+      await bot.api.sendMessage(telegram_id, message);
       return {
         newBalance: currentBalance,
         success: false,
@@ -141,7 +143,7 @@ export {
   sendCurrentBalanceMessage,
   imageToVideoCost,
   textToSpeechCost,
-  voiceCost,
+  speechGenerationCost,
   promptGenerationCost,
   imageNeuroGenerationCost,
   sendCostMessage,

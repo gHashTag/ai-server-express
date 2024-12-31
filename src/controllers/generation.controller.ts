@@ -92,17 +92,33 @@ export class GenerationController {
 
   public textToSpeech = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { text, voice_id, telegram_id } = req.body;
-      if (!text || !voice_id || !telegram_id) {
-        res.status(400).json({ message: 'Text, voice_id, and telegram_id are required' });
+      const { text, voice_id, telegram_id, username, is_ru } = req.body;
+      console.log(req.body, 'req.body');
+      if (!text) {
+        res.status(400).json({ message: 'Text is required' });
+        return;
+      }
+      if (!voice_id) {
+        res.status(400).json({ message: 'Voice_id is required' });
+        return;
+      }
+      if (!telegram_id) {
+        res.status(400).json({ message: 'Telegram_id is required' });
+        return;
+      }
+      if (!username) {
+        res.status(400).json({ message: 'Username is required' });
+        return;
+      }
+      if (!is_ru) {
+        res.status(400).json({ message: 'Is_ru is required' });
         return;
       }
       res.status(200).json({ message: 'Processing started' });
 
-      generateSpeech({ text, voice_id })
+      generateSpeech({ text, voice_id, telegram_id, username, is_ru })
         .then(async ({ audioUrl }) => {
           console.log('Генерация речи завершена:', audioUrl);
-          await bot.api.sendAudio(telegram_id, new InputFile(audioUrl));
         })
         .catch(error => {
           console.error('Ошибка при генерации речи:', error);
