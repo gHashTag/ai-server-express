@@ -5,10 +5,15 @@ import winstonDaily from 'winston-daily-rotate-file';
 import { LOG_DIR } from '@config';
 
 // logs dir
-const logDir: string = join(__dirname, LOG_DIR);
+const logDir: string =
+  LOG_DIR && LOG_DIR.startsWith('/')
+    ? LOG_DIR // Если абсолютный путь, используем как есть
+    : join(process.cwd(), LOG_DIR || 'logs'); // Иначе используем относительный путь от корня проекта
+
+console.log('Log directory:', logDir);
 
 if (!existsSync(logDir)) {
-  mkdirSync(logDir);
+  mkdirSync(logDir, { recursive: true });
 }
 
 // Define log format
@@ -30,9 +35,9 @@ const logger = winston.createLogger({
     new winstonDaily({
       level: 'debug',
       datePattern: 'YYYY-MM-DD',
-      dirname: logDir + '/debug', // log file /logs/debug/*.log in save
+      dirname: join(logDir, 'debug'), // Используем path.join
       filename: `%DATE%.log`,
-      maxFiles: 30, // 30 Days saved
+      maxFiles: 30,
       json: false,
       zippedArchive: true,
     }),
@@ -40,9 +45,9 @@ const logger = winston.createLogger({
     new winstonDaily({
       level: 'error',
       datePattern: 'YYYY-MM-DD',
-      dirname: logDir + '/error', // log file /logs/error/*.log in save
+      dirname: join(logDir, 'error'), // Используем path.join
       filename: `%DATE%.log`,
-      maxFiles: 30, // 30 Days saved
+      maxFiles: 30,
       handleExceptions: true,
       json: false,
       zippedArchive: true,
