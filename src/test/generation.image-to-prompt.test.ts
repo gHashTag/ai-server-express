@@ -23,6 +23,8 @@ describe('POST /image-to-prompt', () => {
     const requestBody = {
       image: 'https://dmrooqbmxdhdyblqzswu.supabase.co/storage/v1/object/public/neuro_coder/cover01.png',
       telegram_id: 123456789,
+      username: 'testuser',
+      is_ru: true,
     };
 
     (generateImageToPrompt as jest.Mock).mockResolvedValue('This is a generated caption.');
@@ -32,7 +34,7 @@ describe('POST /image-to-prompt', () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Processing started');
 
-    expect(generateImageToPrompt).toHaveBeenCalledWith('https://dmrooqbmxdhdyblqzswu.supabase.co/storage/v1/object/public/neuro_coder/cover01.png');
+    expect(generateImageToPrompt).toHaveBeenCalledWith(requestBody.image, requestBody.telegram_id, requestBody.username, requestBody.is_ru);
   });
 
   it('should return 400 when required fields are missing', async () => {
@@ -43,6 +45,6 @@ describe('POST /image-to-prompt', () => {
     const response = await request(app.getServer()).post('/generate/image-to-prompt').send(requestBody);
 
     expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message', 'Image and telegram_id are required');
+    expect(response.body).toHaveProperty('message', 'Image is required');
   });
 });

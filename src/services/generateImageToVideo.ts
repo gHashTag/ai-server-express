@@ -16,6 +16,7 @@ export const generateImageToVideo = async (
   username: string,
   is_ru: boolean,
 ): Promise<string | undefined> => {
+  console.log('generateImageToVideo', imageUrl, prompt, service, telegram_id, username, is_ru);
   let videoUrl: string | undefined;
   const totalCost = imageToVideoGenerationCost;
   const balanceCheck = await processBalanceOperation(telegram_id, totalCost, is_ru);

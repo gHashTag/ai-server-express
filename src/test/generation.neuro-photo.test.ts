@@ -23,6 +23,9 @@ describe('POST /neuro-photo', () => {
     const requestBody = {
       prompt: 'Create a futuristic cityscape',
       telegram_id: 123456789,
+      username: 'testuser',
+      is_ru: true,
+      num_images: 1,
     };
 
     (generateNeuroImage as jest.Mock).mockResolvedValue({
@@ -35,7 +38,13 @@ describe('POST /neuro-photo', () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Processing started');
 
-    expect(generateNeuroImage).toHaveBeenCalledWith('Create a futuristic cityscape', 123456789);
+    expect(generateNeuroImage).toHaveBeenCalledWith(
+      requestBody.prompt,
+      requestBody.telegram_id,
+      requestBody.username,
+      requestBody.num_images,
+      requestBody.is_ru,
+    );
   });
 
   it('should return 400 when required fields are missing', async () => {
@@ -46,6 +55,6 @@ describe('POST /neuro-photo', () => {
     const response = await request(app.getServer()).post('/generate/neuro-photo').send(requestBody);
 
     expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message', 'Prompt and telegram_id are required');
+    expect(response.body).toHaveProperty('message', 'Prompt, telegram_id, username, and is_ru are required');
   });
 });

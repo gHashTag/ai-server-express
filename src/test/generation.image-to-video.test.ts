@@ -25,6 +25,8 @@ describe('POST /image-to-video', () => {
       prompt: 'Create a video of a dance',
       model: 'haiper',
       telegram_id: 123456789,
+      username: 'testuser',
+      is_ru: true,
     };
 
     (generateImageToVideo as jest.Mock).mockResolvedValue('/path/to/generated/video.mp4');
@@ -35,9 +37,12 @@ describe('POST /image-to-video', () => {
     expect(response.body).toHaveProperty('message', 'Processing started');
 
     expect(generateImageToVideo).toHaveBeenCalledWith(
-      'https://dmrooqbmxdhdyblqzswu.supabase.co/storage/v1/object/public/neuro_coder/cover01.png',
-      'Create a video of a dance',
-      'haiper',
+      requestBody.image,
+      requestBody.prompt,
+      requestBody.model,
+      requestBody.telegram_id,
+      requestBody.username,
+      requestBody.is_ru,
     );
   });
 
@@ -49,6 +54,6 @@ describe('POST /image-to-video', () => {
     const response = await request(app.getServer()).post('/generate/image-to-video').send(requestBody);
 
     expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message', 'Image, prompt, model, and telegram_id are required');
+    expect(response.body).toHaveProperty('message', 'Image is required');
   });
 });

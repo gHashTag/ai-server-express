@@ -25,3 +25,13 @@ export const ValidationMiddleware = (type: any, skipMissingProperties = false, w
       });
   };
 };
+
+export const validateCreateAvatarVoice = (req: Request, res: Response, next: NextFunction) => {
+  const { fileId, username, telegram_id } = req.body;
+
+  if (!fileId || !username || !telegram_id) {
+    return res.status(400).json({ message: 'fileId, username, and telegram_id are required' });
+  }
+
+  next();
+};

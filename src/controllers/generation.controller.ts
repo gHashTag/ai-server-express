@@ -67,16 +67,27 @@ export class GenerationController {
 
   public createAvatarVoice = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { fileUrl, username, telegram_id, is_ru } = req.body;
-      if (!fileUrl || !username || !telegram_id || !is_ru) {
+      const { fileId, username, telegram_id, is_ru } = req.body;
+
+      console.log('Received request body:', req.body);
+
+      if (!fileId || !username || !telegram_id) {
+        console.log('Missing required fields:', { fileId, username, telegram_id });
         res.status(400).json({ message: 'fileId, username, and telegram_id are required' });
         return;
       }
+
+      const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/voice/${fileId}`;
+
       res.status(200).json({ message: 'Voice creation started' });
 
-      const voiceId = await createAvatarVoice(fileUrl, telegram_id, username, is_ru);
-
-      console.log('Создание голоса завершено:', voiceId);
+      createAvatarVoice(fileUrl, telegram_id, username, is_ru)
+        .then(voiceId => {
+          console.log('Создание голоса завершено:', voiceId);
+        })
+        .catch(error => {
+          console.error('Ошибка при создании голоса:', error);
+        });
     } catch (error) {
       next(error);
     }
@@ -171,6 +182,7 @@ export class GenerationController {
   public imageToPrompt = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { image, telegram_id, username, is_ru } = req.body;
+      console.log(req.body, 'req.body');
       if (!image) {
         res.status(400).json({ message: 'Image is required' });
         return;

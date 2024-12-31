@@ -30,15 +30,17 @@ describe('GenerationController', () => {
       const prompt = 'Create a beautiful landscape';
       const model = 'flux';
       const telegramId = 123456789;
+      const username = 'testuser';
+      const is_ru = true;
 
       // Замокайте возвращаемое значение функции generateImage
       (generateImage as jest.Mock).mockResolvedValue({ image: 'mockedImageBuffer' });
 
       // Вызовите функцию generateImage
-      const result = await generateImage(prompt, model, telegramId);
+      const result = await generateImage(prompt, model, telegramId, username, is_ru);
 
       // Проверка, что generateImage была вызвана с правильными аргументами
-      expect(generateImage).toHaveBeenCalledWith(prompt, model, telegramId);
+      expect(generateImage).toHaveBeenCalledWith(prompt, model, telegramId, username, is_ru);
 
       // Проверка, что результат соответствует ожидаемому
       expect(result).toEqual({ image: 'mockedImageBuffer' });
@@ -52,7 +54,7 @@ describe('GenerationController', () => {
       const response = await request(app.getServer()).post('/generate/text-to-image').send(requestBody);
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('message', 'Prompt, model, and telegram_id are required');
+      expect(response.body).toHaveProperty('message', 'prompt is required');
     });
   });
 });

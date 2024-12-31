@@ -1,9 +1,11 @@
 import { pulse } from '@/helpers/pulse';
 import { processBalanceOperation, sendBalanceMessage, imageToPromptCost } from '@/helpers/telegramStars/telegramStars';
 import axios from 'axios';
+import bot from '@/core/bot';
 
 export async function generateImageToPrompt(imageUrl: string, telegram_id: number, username: string, is_ru: boolean): Promise<string> {
   try {
+    console.log('generateImageToPrompt', imageUrl, telegram_id, username, is_ru);
     const balanceCheck = await processBalanceOperation(telegram_id, imageToPromptCost, is_ru);
     if (!balanceCheck.success) {
       throw new Error('Not enough stars');

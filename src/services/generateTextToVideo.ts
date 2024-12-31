@@ -15,8 +15,7 @@ export const generateTextToVideo = async (
   is_ru: boolean,
 ): Promise<{ videoPath: string }> => {
   try {
-    console.log('Starting video generation with model:', model);
-    console.log('Prompt:', prompt);
+    console.log('generateTextToVideo', prompt, model, telegram_id, username, is_ru);
     // Проверка баланса для всех изображений
     const totalCost = textToVideoGenerationCost;
     const balanceCheck = await processBalanceOperation(telegram_id, totalCost, is_ru);

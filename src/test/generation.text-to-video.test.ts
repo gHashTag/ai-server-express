@@ -24,28 +24,35 @@ describe('POST /text-to-video', () => {
       prompt: 'Create a video of a sunset',
       model: 'haiper',
       telegram_id: 123456789,
+      username: 'testuser',
+      is_ru: true,
     };
 
-    (generateTextToVideo as jest.Mock).mockResolvedValue({
-      videoPath: '/path/to/generated/video.mp4',
-    });
+    (generateTextToVideo as jest.Mock).mockResolvedValue('/path/to/video.mp4');
 
     const response = await request(app.getServer()).post('/generate/text-to-video').send(requestBody);
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Processing started');
 
-    expect(generateTextToVideo).toHaveBeenCalledWith('Create a video of a sunset', 'haiper', 123456789);
+    // Проверяем, что функция была вызвана с отдельными параметрами
+    expect(generateTextToVideo).toHaveBeenCalledWith(
+      requestBody.prompt,
+      requestBody.model,
+      requestBody.telegram_id,
+      requestBody.username,
+      requestBody.is_ru,
+    );
   });
 
   it('should return 400 when required fields are missing', async () => {
     const requestBody = {
-      // Оставьте поля пустыми, чтобы вызвать ошибку
+      prompt: 'Create a video of a sunset',
     };
 
     const response = await request(app.getServer()).post('/generate/text-to-video').send(requestBody);
 
     expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message', 'Model, prompt, and telegram_id are required');
+    expect(response.body).toHaveProperty('message', 'Model is required');
   });
 });

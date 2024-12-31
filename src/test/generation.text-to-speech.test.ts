@@ -24,6 +24,8 @@ describe('POST /text-to-speech', () => {
       text: 'Hello, world!',
       voice_id: 'gPxfjvn7IXljXm1Tlb8o',
       telegram_id: 123456789,
+      username: 'testuser',
+      is_ru: true,
     };
 
     (generateSpeech as jest.Mock).mockResolvedValue({
@@ -35,7 +37,13 @@ describe('POST /text-to-speech', () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Processing started');
 
-    expect(generateSpeech).toHaveBeenCalledWith({ text: 'Hello, world!', voice_id: 'gPxfjvn7IXljXm1Tlb8o' });
+    expect(generateSpeech).toHaveBeenCalledWith({
+      text: requestBody.text,
+      voice_id: requestBody.voice_id,
+      telegram_id: requestBody.telegram_id,
+      username: requestBody.username,
+      is_ru: requestBody.is_ru,
+    });
   });
 
   it('should return 400 when required fields are missing', async () => {
@@ -46,6 +54,6 @@ describe('POST /text-to-speech', () => {
     const response = await request(app.getServer()).post('/generate/text-to-speech').send(requestBody);
 
     expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message', 'Text, voice_id, and telegram_id are required');
+    expect(response.body).toHaveProperty('message', 'Text is required');
   });
 });
