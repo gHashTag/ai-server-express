@@ -13,6 +13,7 @@ const speechGenerationCost = 0.12 / starCost;
 const textToSpeechCost = 0.12 / starCost;
 const imageToVideoCost = 0.99 / starCost;
 const imageToVideoGenerationCost = 0.99 / starCost;
+const imageToPromptCost = 0.99 / starCost;
 
 interface BalanceOperationResult {
   newBalance: number;
@@ -151,4 +152,5 @@ export {
   sendCostMessage,
   textToVideoGenerationCost,
   imageToVideoGenerationCost,
+  imageToPromptCost,
 };

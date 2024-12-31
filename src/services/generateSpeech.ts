@@ -64,7 +64,7 @@ export const generateSpeech = async ({
         console.log('Audio file written successfully to:', audioUrl);
         bot.api.sendAudio(telegram_id, new InputFile(audioUrl));
         sendBalanceMessage(telegram_id, is_ru, balanceCheck.newBalance);
-        pulse(audioUrl, text, 'text-to-speech', telegram_id, username);
+        pulse(audioUrl, text, 'text-to-speech', telegram_id, username, is_ru);
         resolve({ audioUrl });
       });
 

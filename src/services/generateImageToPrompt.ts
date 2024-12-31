@@ -1,7 +1,14 @@
+import { pulse } from '@/helpers/pulse';
+import { processBalanceOperation, sendBalanceMessage, imageToPromptCost } from '@/helpers/telegramStars/telegramStars';
 import axios from 'axios';
 
-export async function generateImageToPrompt(imageUrl: string): Promise<string> {
+export async function generateImageToPrompt(imageUrl: string, telegram_id: number, username: string, is_ru: boolean): Promise<string> {
   try {
+    const balanceCheck = await processBalanceOperation(telegram_id, imageToPromptCost, is_ru);
+    if (!balanceCheck.success) {
+      throw new Error('Not enough stars');
+    }
+
     const initResponse = await axios.post(
       'https://fancyfeast-joy-caption-alpha-two.hf.space/call/stream_chat',
       {
@@ -35,6 +42,8 @@ export async function generateImageToPrompt(imageUrl: string): Promise<string> {
           const data = JSON.parse(line.slice(6));
           if (Array.isArray(data) && data.length > 1) {
             const caption = data[1];
+            await bot.api.sendMessage(telegram_id, '```\n' + caption + '\n```', { parse_mode: 'MarkdownV2' });
+            await pulse(imageUrl, caption, 'image-to-prompt', telegram_id, username, is_ru);
             return caption;
           }
         } catch (e) {
@@ -42,6 +51,8 @@ export async function generateImageToPrompt(imageUrl: string): Promise<string> {
         }
       }
     }
+
+    await sendBalanceMessage(telegram_id, is_ru, balanceCheck.newBalance);
 
     throw new Error('No valid caption found in response');
   } catch (error) {

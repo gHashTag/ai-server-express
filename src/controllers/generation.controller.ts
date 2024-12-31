@@ -10,6 +10,7 @@ import { generateNeuroImage } from '@/services/generateNeuroImage';
 import { createAvatarVoice } from '@/services/createAvatarVoice';
 import { generateModelTraining } from '@/services/generateModelTraining';
 import { imageGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
+import { validateUserParams } from '@/middlewares/validateUserParams';
 
 export class GenerationController {
   public textToImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -27,16 +28,7 @@ export class GenerationController {
         return;
       }
 
-      if (!telegram_id) {
-        res.status(400).json({ message: 'telegram_id is required' });
-        return;
-      }
-
-      if (!username) {
-        res.status(400).json({ message: 'username is required' });
-        return;
-      }
-
+      validateUserParams(req, res, next);
       res.status(200).json({ message: 'Processing started' });
 
       generateImage(prompt, model, telegram_id, username, is_ru)
@@ -102,18 +94,7 @@ export class GenerationController {
         res.status(400).json({ message: 'Voice_id is required' });
         return;
       }
-      if (!telegram_id) {
-        res.status(400).json({ message: 'Telegram_id is required' });
-        return;
-      }
-      if (!username) {
-        res.status(400).json({ message: 'Username is required' });
-        return;
-      }
-      if (!is_ru) {
-        res.status(400).json({ message: 'Is_ru is required' });
-        return;
-      }
+      validateUserParams(req, res, next);
       res.status(200).json({ message: 'Processing started' });
 
       generateSpeech({ text, voice_id, telegram_id, username, is_ru })
@@ -140,18 +121,7 @@ export class GenerationController {
         return;
       }
 
-      if (!telegram_id) {
-        res.status(400).json({ message: 'Telegram_id is required' });
-        return;
-      }
-      if (!username) {
-        res.status(400).json({ message: 'Username is required' });
-        return;
-      }
-      if (!is_ru) {
-        res.status(400).json({ message: 'Is_ru is required' });
-        return;
-      }
+      validateUserParams(req, res, next);
       res.status(200).json({ message: 'Processing started' });
 
       generateTextToVideo(prompt, model, telegram_id, username, is_ru)
@@ -182,18 +152,7 @@ export class GenerationController {
         return;
       }
 
-      if (!telegram_id) {
-        res.status(400).json({ message: 'Telegram_id is required' });
-        return;
-      }
-      if (!username) {
-        res.status(400).json({ message: 'Username is required' });
-        return;
-      }
-      if (!is_ru) {
-        res.status(400).json({ message: 'Is_ru is required' });
-        return;
-      }
+      validateUserParams(req, res, next);
       res.status(200).json({ message: 'Processing started' });
 
       generateImageToVideo(image, prompt, model, telegram_id, username, is_ru)
@@ -203,6 +162,28 @@ export class GenerationController {
         })
         .catch(error => {
           console.error('Ошибка при генерации видео:', error);
+        });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public imageToPrompt = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { image, telegram_id, username, is_ru } = req.body;
+      if (!image) {
+        res.status(400).json({ message: 'Image is required' });
+        return;
+      }
+      validateUserParams(req, res, next);
+      res.status(200).json({ message: 'Processing started' });
+
+      generateImageToPrompt(image, telegram_id, username, is_ru)
+        .then(async caption => {
+          console.log('Генерация описания завершена:', caption);
+        })
+        .catch(error => {
+          console.error('Ошибка при генерации описания:', error);
         });
     } catch (error) {
       next(error);
@@ -232,29 +213,6 @@ export class GenerationController {
         })
         .catch(error => {
           console.error('Ошибка при генерации модели:', error);
-        });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  public imageToPrompt = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { image, telegram_id } = req.body;
-      if (!image || !telegram_id) {
-        res.status(400).json({ message: 'Image and telegram_id are required' });
-        return;
-      }
-      res.status(200).json({ message: 'Processing started' });
-
-      generateImageToPrompt(image)
-        .then(async caption => {
-          console.log('Генерация описания завершена:', caption);
-
-          await bot.api.sendMessage(telegram_id, '```\n' + caption + '\n```', { parse_mode: 'MarkdownV2' });
-        })
-        .catch(error => {
-          console.error('Ошибка при генерации описания:', error);
         });
     } catch (error) {
       next(error);

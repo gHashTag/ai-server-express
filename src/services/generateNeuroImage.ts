@@ -89,7 +89,7 @@ export async function generateNeuroImage(
 
       // Отправляем в pulse
       const pulseImage = Buffer.isBuffer(image) ? `data:image/jpeg;base64,${image.toString('base64')}` : image;
-      await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username);
+      await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username, is_ru);
     }
 
     // Отправляем финальное сообщение после всех изображений

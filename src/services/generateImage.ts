@@ -76,7 +76,7 @@ export const generateImage = async (
       );
 
       const pulseImage = Buffer.isBuffer(image) ? `data:image/jpeg;base64,${image.toString('base64')}` : image;
-      await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username);
+      await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username, is_ru);
 
       return { image, prompt_id };
     } catch (error) {

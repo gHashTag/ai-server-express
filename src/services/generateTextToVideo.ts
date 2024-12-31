@@ -94,7 +94,7 @@ export const generateTextToVideo = async (
 
     await sendBalanceMessage(telegram_id, is_ru, balanceCheck.newBalance);
 
-    await pulse(videoPath, prompt, 'text-to-video', telegram_id, username);
+    await pulse(videoPath, prompt, 'text-to-video', telegram_id, username, is_ru);
 
     return { videoPath };
   } catch (error) {
