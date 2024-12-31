@@ -3,7 +3,7 @@ import { replicate } from '@/core/replicate';
 import { supabase } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import { pulse } from '@/helpers/pulse';
-import { processBalanceOperation, textToVideoGenerationCost } from '@/helpers/telegramStars/telegramStars';
+import { processBalanceOperation, sendBalanceMessage, textToVideoGenerationCost } from '@/helpers/telegramStars/telegramStars';
 import { writeFile } from 'fs/promises';
 import { InputFile } from 'grammy';
 
@@ -91,6 +91,8 @@ export const generateTextToVideo = async (
     await writeFile(videoPath, videoBuffer);
 
     await bot.api.sendVideo(telegram_id, new InputFile(videoPath));
+
+    await sendBalanceMessage(telegram_id, is_ru, balanceCheck.newBalance);
 
     await pulse(videoPath, prompt, 'text-to-video', telegram_id, username);
 

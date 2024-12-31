@@ -4,7 +4,7 @@ import { supabase } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import { pulse } from '@/helpers/pulse';
 import { retry } from '@/helpers/retry';
-import { processBalanceOperation, imageToVideoGenerationCost } from '@/helpers/telegramStars/telegramStars';
+import { processBalanceOperation, imageToVideoGenerationCost, sendBalanceMessage } from '@/helpers/telegramStars/telegramStars';
 import { writeFile } from 'fs/promises';
 import { InputFile } from 'grammy';
 
@@ -104,8 +104,8 @@ export const generateImageToVideo = async (
   await writeFile(videoPath, videoBuffer);
 
   await bot.api.sendVideo(telegram_id, new InputFile(videoPath));
-
-  await pulse(videoPath, prompt, 'text-to-video', telegram_id, username);
+  await sendBalanceMessage(telegram_id, is_ru, balanceCheck.newBalance);
+  await pulse(videoPath, prompt, 'image-to-video', telegram_id, username);
 
   return videoUrl;
 };
