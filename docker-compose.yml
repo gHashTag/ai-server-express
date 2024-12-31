@@ -16,12 +16,15 @@ services:
     container_name: server
     build:
       context: ./
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
     ports:
       - "3000:3000"
     volumes:
-      - ./:/app
-      - /app/node_modules
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - LOG_DIR=/app/logs
     restart: 'unless-stopped'
     networks:
       - backend
@@ -29,7 +32,3 @@ services:
 networks:
   backend:
     driver: bridge
-
-volumes:
-  data:
-    driver: local
