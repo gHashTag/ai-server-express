@@ -28,7 +28,7 @@ export class GenerationController {
         return;
       }
 
-      validateUserParams(req, res, next);
+      validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
       generateImage(prompt, model, telegram_id, username, is_ru)
@@ -105,7 +105,7 @@ export class GenerationController {
         res.status(400).json({ message: 'Voice_id is required' });
         return;
       }
-      validateUserParams(req, res, next);
+      validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
       generateSpeech({ text, voice_id, telegram_id, username, is_ru })
@@ -132,7 +132,7 @@ export class GenerationController {
         return;
       }
 
-      validateUserParams(req, res, next);
+      validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
       generateTextToVideo(prompt, model, telegram_id, username, is_ru)
@@ -163,7 +163,7 @@ export class GenerationController {
         return;
       }
 
-      validateUserParams(req, res, next);
+      validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
       generateImageToVideo(image, prompt, model, telegram_id, username, is_ru)
@@ -187,7 +187,7 @@ export class GenerationController {
         res.status(400).json({ message: 'Image is required' });
         return;
       }
-      validateUserParams(req, res, next);
+      validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
       generateImageToPrompt(image, telegram_id, username, is_ru)

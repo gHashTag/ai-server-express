@@ -29,6 +29,7 @@ export class App {
 
     this.initializeMiddlewares();
     this.initializeRoutes(routes);
+
     this.initializeSwagger();
     this.initializeErrorHandling();
 

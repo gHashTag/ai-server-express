@@ -1,14 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request } from 'express';
 
-interface UserParams {
-  username?: string;
-  telegram_id?: number;
-  is_ru?: boolean;
+interface ValidationResult {
+  isValid: boolean;
+  message?: string;
+  missingParams?: string[];
 }
 
-export const validateUserParams = (req: Request, res: Response, next: NextFunction): void => {
-  const { username, telegram_id, is_ru } = req.body as UserParams;
+interface UserParams {
+  username: string;
+  telegram_id: string;
+  is_ru: boolean;
+}
 
+export const validateUserParams = (req: Request): ValidationResult => {
+  const { username, telegram_id, is_ru } = req.body as UserParams;
   const missingParams = [];
 
   if (!username) {
@@ -24,12 +29,12 @@ export const validateUserParams = (req: Request, res: Response, next: NextFuncti
   }
 
   if (missingParams.length > 0) {
-    res.status(400).json({
+    return {
+      isValid: false,
       message: `Missing required parameters: ${missingParams.join(', ')}`,
       missingParams,
-    });
-    return;
+    };
   }
 
-  next();
+  return { isValid: true };
 };
