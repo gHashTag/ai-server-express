@@ -5,13 +5,13 @@ import cors from 'cors';
 import express, { Application } from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
-import morgan from 'morgan';
+
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { NODE_ENV, PORT, LOG_FORMAT, ORIGIN, CREDENTIALS } from '@config';
 import { Routes } from '@interfaces/routes.interface';
-import { ErrorMiddleware } from '@middlewares/error.middleware';
-import { logger, stream } from '@utils/logger';
+
+import { getDynamicLogger, logger } from '@utils/logger';
 import { Server } from 'http';
 import { GenerationController } from './controllers/generation.controller';
 
@@ -57,7 +57,9 @@ export class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(morgan(LOG_FORMAT, { stream }));
+    this.app.use((req, res, next) => {
+      getDynamicLogger(LOG_FORMAT)(req, res, next);
+    });
     this.app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
     this.app.use(hpp());
     this.app.use(helmet());
@@ -70,6 +72,40 @@ export class App {
   private initializeRoutes(routes: Routes[]) {
     routes.forEach(route => {
       this.app.use('/', route.router);
+    });
+    // Базовый роут - исправляем
+    this.app.get('/', (_req, res) => {
+      try {
+        res.status(200).json({
+          status: 'success',
+          message: 'Welcome to AI Server Express',
+          version: '1.0.0',
+          endpoints: {
+            health: '/health',
+            api: '/api/test',
+          },
+        });
+      } catch (error) {
+        logger.error('Error in root route:', error);
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error',
+        });
+      }
+    });
+
+    // Остальные роуты работают нормально
+    this.app.get('/health', (_req, res) => {
+      res.json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    this.app.get('/api/test', (_req, res) => {
+      res.json({
+        message: 'API is working',
+      });
     });
   }
 
@@ -90,6 +126,21 @@ export class App {
   }
 
   private initializeErrorHandling() {
-    this.app.use(ErrorMiddleware);
+    // Обработка 404
+    this.app.use((_req, res) => {
+      res.status(404).json({
+        status: 'error',
+        message: 'Route not found',
+      });
+    });
+
+    // Обработка ошибок - убираем неиспользуемый параметр _next
+    this.app.use((err: Error, _req: express.Request, res: express.Response) => {
+      logger.error('Error:', err);
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error',
+      });
+    });
   }
 }

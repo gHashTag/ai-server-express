@@ -1,18 +1,18 @@
-# NodeJS Version 16
-FROM node:16.18-buster-slim
+FROM node:20-alpine
 
-# Copy Dir
-COPY . ./app
-
-# Work to Dir
 WORKDIR /app
 
-# Install Node Package
-RUN npm install --legacy-peer-deps
+COPY package*.json ./
+RUN npm install
 
-# Set Env
-ENV NODE_ENV development
+# Создаем директорию для логов с правильными правами
+RUN mkdir -p /tmp/logs && \
+    chown -R node:node /tmp/logs
+
+USER node
+
+COPY --chown=node:node . .
+
 EXPOSE 3000
 
-# Cmd script
 CMD ["npm", "run", "dev"]

@@ -1,70 +1,44 @@
 import { existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
 import winston from 'winston';
-import winstonDaily from 'winston-daily-rotate-file';
-import { LOG_DIR } from '@config';
+import morgan from 'morgan';
 
-// logs dir
-const logDir: string =
-  LOG_DIR && LOG_DIR.startsWith('/')
-    ? LOG_DIR // Если абсолютный путь, используем как есть
-    : join(process.cwd(), LOG_DIR || 'logs'); // Иначе используем относительный путь от корня проекта
-
-console.log('Log directory:', logDir);
+const logDir = process.env.LOG_DIR || '/tmp/logs';
 
 if (!existsSync(logDir)) {
-  mkdirSync(logDir, { recursive: true });
+  try {
+    mkdirSync(logDir, { recursive: true });
+  } catch (error) {
+    console.warn(`Unable to create log directory: ${error.message}`);
+  }
 }
 
-// Define log format
-const logFormat = winston.format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`);
-
-/*
- * Log Level
- * error: 0, warn: 1, info: 2, http: 3, verbose: 4, debug: 5, silly: 6
- */
+// Создаем логгер
 const logger = winston.createLogger({
-  format: winston.format.combine(
-    winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss',
-    }),
-    logFormat,
-  ),
+  level: 'debug',
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   transports: [
-    // debug log setting
-    new winstonDaily({
-      level: 'debug',
-      datePattern: 'YYYY-MM-DD',
-      dirname: join(logDir, 'debug'), // Используем path.join
-      filename: `%DATE%.log`,
-      maxFiles: 30,
-      json: false,
-      zippedArchive: true,
-    }),
-    // error log setting
-    new winstonDaily({
-      level: 'error',
-      datePattern: 'YYYY-MM-DD',
-      dirname: join(logDir, 'error'), // Используем path.join
-      filename: `%DATE%.log`,
-      maxFiles: 30,
-      handleExceptions: true,
-      json: false,
-      zippedArchive: true,
+    new winston.transports.Console({
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
     }),
   ],
 });
 
-logger.add(
-  new winston.transports.Console({
-    format: winston.format.combine(winston.format.splat(), winston.format.colorize()),
-  }),
-);
-
-const stream = {
-  write: (message: string) => {
-    logger.info(message.substring(0, message.lastIndexOf('\n')));
+// Создаем разные форматы логирования
+const morganDev = morgan('dev', {
+  stream: {
+    write: (message: string) => logger.info(message.trim()),
   },
+});
+
+const morganCombined = morgan('combined', {
+  stream: {
+    write: (message: string) => logger.info(message.trim()),
+  },
+});
+
+// Экспортируем функцию для динамического выбора формата
+const getDynamicLogger = (format = 'dev') => {
+  return format === 'combined' ? morganCombined : morganDev;
 };
 
-export { logger, stream };
+export { logger, getDynamicLogger };
