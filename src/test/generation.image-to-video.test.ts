@@ -21,7 +21,7 @@ describe('POST /image-to-video', () => {
 
   it('should return 200 and start processing when valid data is provided', async () => {
     const requestBody = {
-      image: 'http://example.com/image.jpg',
+      image: 'https://dmrooqbmxdhdyblqzswu.supabase.co/storage/v1/object/public/neuro_coder/cover01.png',
       prompt: 'Create a video of a dance',
       model: 'haiper',
       telegram_id: 123456789,
@@ -34,7 +34,11 @@ describe('POST /image-to-video', () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Processing started');
 
-    expect(generateImageToVideo).toHaveBeenCalledWith('http://example.com/image.jpg', 'Create a video of a dance', 'haiper');
+    expect(generateImageToVideo).toHaveBeenCalledWith(
+      'https://dmrooqbmxdhdyblqzswu.supabase.co/storage/v1/object/public/neuro_coder/cover01.png',
+      'Create a video of a dance',
+      'haiper',
+    );
   });
 
   it('should return 400 when required fields are missing', async () => {

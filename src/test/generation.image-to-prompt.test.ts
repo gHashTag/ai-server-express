@@ -21,7 +21,7 @@ describe('POST /image-to-prompt', () => {
 
   it('should return 200 and start processing when valid data is provided', async () => {
     const requestBody = {
-      image: 'http://example.com/image.jpg',
+      image: 'https://dmrooqbmxdhdyblqzswu.supabase.co/storage/v1/object/public/neuro_coder/cover01.png',
       telegram_id: 123456789,
     };
 
@@ -32,7 +32,7 @@ describe('POST /image-to-prompt', () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Processing started');
 
-    expect(generateImageToPrompt).toHaveBeenCalledWith('http://example.com/image.jpg');
+    expect(generateImageToPrompt).toHaveBeenCalledWith('https://dmrooqbmxdhdyblqzswu.supabase.co/storage/v1/object/public/neuro_coder/cover01.png');
   });
 
   it('should return 400 when required fields are missing', async () => {

@@ -7,10 +7,12 @@ const trainingCostInStars = 50 / starCost;
 const promptGenerationCost = 0.048 / starCost;
 const imageGenerationCost = 0.12 / starCost;
 const imageNeuroGenerationCost = 0.12 / starCost;
+const textToVideoGenerationCost = 0.99 / starCost;
 const textToVideoCost = 0.99 / starCost;
 const speechGenerationCost = 0.12 / starCost;
 const textToSpeechCost = 0.12 / starCost;
 const imageToVideoCost = 0.99 / starCost;
+const imageToVideoGenerationCost = 0.99 / starCost;
 
 interface BalanceOperationResult {
   newBalance: number;
@@ -147,4 +149,6 @@ export {
   promptGenerationCost,
   imageNeuroGenerationCost,
   sendCostMessage,
+  textToVideoGenerationCost,
+  imageToVideoGenerationCost,
 };

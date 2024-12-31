@@ -1,13 +1,28 @@
+import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
 import { supabase } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
+import { pulse } from '@/helpers/pulse';
+import { processBalanceOperation, textToVideoGenerationCost } from '@/helpers/telegramStars/telegramStars';
 import { writeFile } from 'fs/promises';
+import { InputFile } from 'grammy';
 
-export const generateTextToVideo = async (prompt: string, model: string, telegram_id: number): Promise<{ videoPath: string }> => {
+export const generateTextToVideo = async (
+  prompt: string,
+  model: string,
+  telegram_id: number,
+  username: string,
+  is_ru: boolean,
+): Promise<{ videoPath: string }> => {
   try {
     console.log('Starting video generation with model:', model);
     console.log('Prompt:', prompt);
-
+    // Проверка баланса для всех изображений
+    const totalCost = textToVideoGenerationCost;
+    const balanceCheck = await processBalanceOperation(telegram_id, totalCost, is_ru);
+    if (!balanceCheck.success) {
+      throw new Error(balanceCheck.error);
+    }
     let output: any;
 
     if (model === 'haiper') {
@@ -74,6 +89,10 @@ export const generateTextToVideo = async (prompt: string, model: string, telegra
     const videoBuffer = await downloadFile(videoUrl);
     const videoPath = `temp_${Date.now()}.mp4`;
     await writeFile(videoPath, videoBuffer);
+
+    await bot.api.sendVideo(telegram_id, new InputFile(videoPath));
+
+    await pulse(videoPath, prompt, 'text-to-video', telegram_id, username);
 
     return { videoPath };
   } catch (error) {

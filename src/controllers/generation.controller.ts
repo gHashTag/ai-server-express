@@ -130,16 +130,33 @@ export class GenerationController {
 
   public textToVideo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { prompt, model, telegram_id } = req.body;
-      if (!model || !prompt || !telegram_id) {
-        res.status(400).json({ message: 'Model, prompt, and telegram_id are required' });
+      const { prompt, model, telegram_id, username, is_ru } = req.body;
+      if (!prompt) {
+        res.status(400).json({ message: 'Prompt is required' });
+        return;
+      }
+      if (!model) {
+        res.status(400).json({ message: 'Model is required' });
+        return;
+      }
+
+      if (!telegram_id) {
+        res.status(400).json({ message: 'Telegram_id is required' });
+        return;
+      }
+      if (!username) {
+        res.status(400).json({ message: 'Username is required' });
+        return;
+      }
+      if (!is_ru) {
+        res.status(400).json({ message: 'Is_ru is required' });
         return;
       }
       res.status(200).json({ message: 'Processing started' });
 
-      generateTextToVideo(prompt, model, telegram_id)
+      generateTextToVideo(prompt, model, telegram_id, username, is_ru)
         .then(async ({ videoPath }) => {
-          await bot.api.sendVideo(telegram_id, new InputFile(videoPath));
+          console.log('Генерация видео завершена:', videoPath);
         })
         .catch(error => {
           console.error('Ошибка при генерации видео:', error);
@@ -151,14 +168,35 @@ export class GenerationController {
 
   public imageToVideo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { image, prompt, model, telegram_id } = req.body;
-      if (!image || !prompt || !model || !telegram_id) {
-        res.status(400).json({ message: 'Image, prompt, model, and telegram_id are required' });
+      const { image, prompt, model, telegram_id, username, is_ru } = req.body;
+      if (!image) {
+        res.status(400).json({ message: 'Image is required' });
+        return;
+      }
+      if (!prompt) {
+        res.status(400).json({ message: 'Prompt is required' });
+        return;
+      }
+      if (!model) {
+        res.status(400).json({ message: 'Model is required' });
+        return;
+      }
+
+      if (!telegram_id) {
+        res.status(400).json({ message: 'Telegram_id is required' });
+        return;
+      }
+      if (!username) {
+        res.status(400).json({ message: 'Username is required' });
+        return;
+      }
+      if (!is_ru) {
+        res.status(400).json({ message: 'Is_ru is required' });
         return;
       }
       res.status(200).json({ message: 'Processing started' });
 
-      generateImageToVideo(image, prompt, model)
+      generateImageToVideo(image, prompt, model, telegram_id, username, is_ru)
         .then(async videoUrl => {
           console.log('Генерация видео завершена:', videoUrl);
           await bot.api.sendVideo(telegram_id, new InputFile(videoUrl));
