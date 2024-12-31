@@ -1,15 +1,19 @@
+# Build stage
 FROM node:20-alpine as builder
 
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm install
 
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine
+# Production stage
+FROM node:20-alpine as production
 
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm install --production
 
@@ -17,9 +21,10 @@ COPY --from=builder /app/dist ./dist
 COPY .env.production.local .
 
 RUN mkdir -p /app/logs && \
-    chown -R node:node /app/logs
+    chown -R node:node /app
 
 USER node
+
 EXPOSE 3000
 
 CMD ["node", "dist/server.js"]
