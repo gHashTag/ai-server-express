@@ -91,7 +91,7 @@ export const generateTextToVideo = async (
 
     await bot.api.sendVideo(telegram_id, new InputFile(videoPath));
 
-    await sendBalanceMessage(telegram_id, is_ru, balanceCheck.newBalance);
+    await sendBalanceMessage(telegram_id, balanceCheck.newBalance, textToVideoGenerationCost, is_ru);
 
     await pulse(videoPath, prompt, 'text-to-video', telegram_id, username, is_ru);
 

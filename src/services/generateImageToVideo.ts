@@ -105,7 +105,7 @@ export const generateImageToVideo = async (
   await writeFile(videoPath, videoBuffer);
 
   await bot.api.sendVideo(telegram_id, new InputFile(videoPath));
-  await sendBalanceMessage(telegram_id, is_ru, balanceCheck.newBalance);
+  await sendBalanceMessage(telegram_id, balanceCheck.newBalance, imageToVideoGenerationCost, is_ru);
   await pulse(videoPath, prompt, 'image-to-video', telegram_id, username, is_ru);
 
   return videoUrl;

@@ -13,7 +13,7 @@ const speechGenerationCost = 0.12 / starCost;
 const textToSpeechCost = 0.12 / starCost;
 const imageToVideoCost = 0.99 / starCost;
 const imageToVideoGenerationCost = 0.99 / starCost;
-const imageToPromptCost = 0.99 / starCost;
+const imageToPromptCost = 0.03 / starCost;
 
 interface BalanceOperationResult {
   newBalance: number;
@@ -75,7 +75,7 @@ async function incrementBalance({ telegram_id, amount }: { telegram_id: string; 
 
 async function getUserBalance(userId: number): Promise<number> {
   const { data, error } = await supabase.from('users').select('balance').eq('telegram_id', userId.toString()).single();
-
+  console.log('getUserBalance', data, error);
   if (error) {
     if (error.code === 'PGRST116') {
       console.error(`Пользователь с ID ${userId} не найден.`);
@@ -90,8 +90,9 @@ async function getUserBalance(userId: number): Promise<number> {
 
 // Функция для обновления баланса пользователя
 async function updateUserBalance(userId: number, newBalance: number): Promise<void> {
+  console.log('updateUserBalance', userId, newBalance);
   const { error } = await supabase.from('users').update({ balance: newBalance }).eq('telegram_id', userId.toString());
-
+  console.log('updateUserBalance', error);
   if (error) {
     console.error('Ошибка при обновлении баланса:', error);
     throw new Error('Не удалось обновить баланс пользователя');
@@ -110,12 +111,12 @@ async function sendInsufficientStarsMessage(telegram_id: number, isRu: boolean) 
   await bot.api.sendMessage(telegram_id, message);
 }
 
-const sendBalanceMessage = async (telegram_id: number, isRu: boolean, newBalance: number) => {
+const sendBalanceMessage = async (telegram_id: number, newBalance: number, cost: number, isRu: boolean) => {
   await bot.api.sendMessage(
     telegram_id,
     isRu
-      ? `Стоимость: ${imageGenerationCost.toFixed(2)} ⭐️\nВаш новый баланс: ${newBalance.toFixed(2)} ⭐️`
-      : `Cost: ${imageGenerationCost.toFixed(2)} ⭐️\nYour new balance: ${newBalance.toFixed(2)} ⭐️`,
+      ? `Стоимость: ${cost.toFixed(2)} ⭐️\nВаш баланс: ${newBalance.toFixed(2)} ⭐️`
+      : `Cost: ${cost.toFixed(2)} ⭐️\nYour balance: ${newBalance.toFixed(2)} ⭐️`,
   );
 };
 

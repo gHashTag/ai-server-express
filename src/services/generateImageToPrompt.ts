@@ -6,7 +6,9 @@ import bot from '@/core/bot';
 export async function generateImageToPrompt(imageUrl: string, telegram_id: number, username: string, is_ru: boolean): Promise<string> {
   try {
     console.log('generateImageToPrompt', imageUrl, telegram_id, username, is_ru);
+    console.log('imageToPromptCost', imageToPromptCost);
     const balanceCheck = await processBalanceOperation(telegram_id, imageToPromptCost, is_ru);
+    console.log('balanceCheck', balanceCheck);
     if (!balanceCheck.success) {
       throw new Error('Not enough stars');
     }
@@ -35,6 +37,10 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
       maxBodyLength: Infinity,
     });
 
+    if (!resultResponse.data) {
+      throw new Error('Image to prompt: No data in response');
+    }
+
     const responseText = resultResponse.data as string;
     const lines = responseText.split('\n');
 
@@ -46,6 +52,7 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
             const caption = data[1];
             await bot.api.sendMessage(telegram_id, '```\n' + caption + '\n```', { parse_mode: 'MarkdownV2' });
             await pulse(imageUrl, caption, 'image-to-prompt', telegram_id, username, is_ru);
+            await sendBalanceMessage(telegram_id, balanceCheck.newBalance, imageToPromptCost, is_ru);
             return caption;
           }
         } catch (e) {
@@ -53,8 +60,6 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
         }
       }
     }
-
-    await sendBalanceMessage(telegram_id, is_ru, balanceCheck.newBalance);
 
     throw new Error('No valid caption found in response');
   } catch (error) {
