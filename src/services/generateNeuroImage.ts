@@ -63,7 +63,10 @@ export async function generateNeuroImage(
     // Цикл генерации изображений
     for (let i = 0; i < num_images; i++) {
       console.log(`Generating image ${i + 1} of ${num_images}`);
-      bot.api.sendMessage(telegram_id, `Generating image ${i + 1} of ${num_images}`);
+      bot.api.sendMessage(
+        telegram_id,
+        is_ru ? `🔥 Генерация изображения ${i + 1} из ${num_images}` : `🔥 Generating image ${i + 1} of ${num_images}`,
+      );
 
       const output = await replicate.run(model_type, { input });
       const imageUrl = await processApiResponse(output);
@@ -96,8 +99,8 @@ export async function generateNeuroImage(
     await bot.api.sendMessage(
       telegram_id,
       is_ru
-        ? `Генерация завершена!\n\nСтоимость: ${totalCost.toFixed(2)} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
-        : `Generation completed!\n\nCost: ${totalCost.toFixed(2)} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
+        ? `🔥 Генерация завершена!\n\nСтоимость: ${totalCost.toFixed(2)} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
+        : `🔥 Generation completed!\n\nCost: ${totalCost.toFixed(2)} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
       {
         reply_markup: {
           inline_keyboard: [
