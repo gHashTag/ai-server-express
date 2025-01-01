@@ -22,11 +22,8 @@ export async function createAvatarVoice(fileUrl: string, telegram_id: number, us
   await bot.api.sendMessage(
     telegram_id,
     isRu
-      ? '✅ Голосовой аватар успешно создан, используйте команду /text_to_speech чтобы проверить'
-      : '✅ Voice avatar successfully created! Use the command /text_to_speech to check',
-    {
-      parse_mode: 'MarkdownV2',
-    },
+      ? '✅ Голосовой аватар успешно создан, \n используйте команду /text_to_speech чтобы проверить'
+      : '✅ Voice avatar successfully created! \n Use the command /text_to_speech to check',
   );
 
   if (error) {

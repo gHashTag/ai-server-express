@@ -29,11 +29,7 @@ export const validateUserParams = (req: Request): ValidationResult => {
   }
 
   if (missingParams.length > 0) {
-    return {
-      isValid: false,
-      message: `Missing required parameters: ${missingParams.join(', ')}`,
-      missingParams,
-    };
+    throw new Error(`Missing required parameters: ${missingParams.join(', ')}`);
   }
 
   return { isValid: true };

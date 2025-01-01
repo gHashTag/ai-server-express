@@ -9,7 +9,7 @@ import { generateImageToPrompt } from '@/services/generateImageToPrompt';
 import { generateNeuroImage } from '@/services/generateNeuroImage';
 import { createAvatarVoice } from '@/services/createAvatarVoice';
 import { generateModelTraining } from '@/services/generateModelTraining';
-import { imageGenerationCost, processBalanceOperation, textToImageGenerationCost } from '@/helpers/telegramStars/telegramStars';
+import { processBalanceOperation, textToImageGenerationCost } from '@/helpers/telegramStars/telegramStars';
 import { validateUserParams } from '@/middlewares/validateUserParams';
 
 export class GenerationController {
@@ -67,17 +67,17 @@ export class GenerationController {
 
   public createAvatarVoice = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { fileId, username, telegram_id, is_ru } = req.body;
+      const { fileUrl, telegram_id, username, is_ru } = req.body;
 
       console.log('Received request body:', req.body);
 
-      if (!fileId || !username || !telegram_id) {
-        console.log('Missing required fields:', { fileId, username, telegram_id });
-        res.status(400).json({ message: 'fileId, username, and telegram_id are required' });
+      if (!fileUrl) {
+        console.log('Missing required fields:', fileUrl);
+        res.status(400).json({ message: 'fileId is required' });
         return;
       }
 
-      const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/voice/${fileId}`;
+      validateUserParams(req);
 
       res.status(200).json({ message: 'Voice creation started' });
 

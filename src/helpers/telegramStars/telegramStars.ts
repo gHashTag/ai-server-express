@@ -3,7 +3,7 @@ import { supabase } from '@/core/supabase';
 
 const starCost = 0.016;
 
-const trainingCostInStars = 50 / starCost;
+const trainingCostInStars = 20 / starCost;
 const promptGenerationCost = 0.048 / starCost;
 const textToImageGenerationCost = 0.12 / starCost;
 const imageNeuroGenerationCost = 0.12 / starCost;
@@ -14,6 +14,7 @@ const textToSpeechCost = 0.12 / starCost;
 const imageToVideoCost = 0.99 / starCost;
 const imageToVideoGenerationCost = 0.99 / starCost;
 const imageToPromptCost = 0.03 / starCost;
+const voiceConversationCost = 0.99 / starCost;
 
 interface BalanceOperationResult {
   newBalance: number;
@@ -162,4 +163,5 @@ export {
   textToVideoGenerationCost,
   imageToVideoGenerationCost,
   imageToPromptCost,
+  voiceConversationCost,
 };
