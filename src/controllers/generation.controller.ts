@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { InputFile } from 'grammy';
 import bot from '@/core/bot';
-import { generateImage } from '@/services/generateImage';
+import { generateTextToImage } from '@/services/generateTextToImage';
 import { generateSpeech } from '@/services/generateSpeech';
 import { generateTextToVideo } from '@/services/generateTextToVideo';
 import { generateImageToVideo } from '@/services/generateImageToVideo';
@@ -9,7 +9,7 @@ import { generateImageToPrompt } from '@/services/generateImageToPrompt';
 import { generateNeuroImage } from '@/services/generateNeuroImage';
 import { createAvatarVoice } from '@/services/createAvatarVoice';
 import { generateModelTraining } from '@/services/generateModelTraining';
-import { imageGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
+import { imageGenerationCost, processBalanceOperation, textToImageGenerationCost } from '@/helpers/telegramStars/telegramStars';
 import { validateUserParams } from '@/middlewares/validateUserParams';
 
 export class GenerationController {
@@ -31,10 +31,10 @@ export class GenerationController {
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateImage(prompt, model, telegram_id, username, is_ru)
+      generateTextToImage(prompt, model, telegram_id, username, is_ru)
         .then(async () => {
           console.log('Генерация изображения завершена:');
-          await processBalanceOperation(telegram_id, imageGenerationCost, is_ru);
+          await processBalanceOperation({ telegram_id, operationCost: textToImageGenerationCost, is_ru });
         })
         .catch(error => {
           console.error('Ошибка при генерации изображения:', error);

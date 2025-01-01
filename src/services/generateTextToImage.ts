@@ -6,9 +6,9 @@ import { processApiResponse } from '@/helpers/processApiResponse';
 import { pulse } from '@/helpers/pulse';
 import bot from '@/core/bot';
 import { InputFile } from 'grammy';
-import { imageGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
+import { textToImageGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
 
-export const generateImage = async (
+export const generateTextToImage = async (
   prompt: string,
   model_type: string,
   telegram_id: number,
@@ -17,9 +17,12 @@ export const generateImage = async (
 ): Promise<GenerationResult> => {
   try {
     console.log(telegram_id, 'telegram_id generateImage');
-    const aspect_ratio = await getAspectRatio(telegram_id);
-    console.log(aspect_ratio, 'aspect_ratio generateImage');
 
+    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: textToImageGenerationCost, is_ru });
+    console.log(balanceCheck, 'balanceCheck generateImage');
+    if (!balanceCheck.success) {
+      throw new Error('Not enough stars');
+    }
     await bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...');
 
     const modelConfig = models[model_type];
@@ -28,35 +31,30 @@ export const generateImage = async (
     if (!modelConfig) {
       throw new Error(`Неподдерживаемый тип модели: ${model_type}`);
     }
-
+    const aspect_ratio = await getAspectRatio(telegram_id);
+    console.log(aspect_ratio, 'aspect_ratio generateImage');
     const input = modelConfig.getInput(`${modelConfig.word} ${prompt}`, aspect_ratio);
     console.log(input, 'input');
 
     try {
       const modelKey = modelConfig.key as `${string}/${string}` | `${string}/${string}:${string}`;
-      console.log(modelKey, 'modelKey');
+
       const output: ApiImageResponse = (await replicate.run(modelKey, { input })) as ApiImageResponse;
-      console.log(output, 'output');
       const imageUrl = await processApiResponse(output);
-      console.log(imageUrl, 'imageUrl');
       const prompt_id = await savePrompt(prompt, modelKey, imageUrl, telegram_id);
-      console.log(prompt_id, 'prompt_id');
       const image = await downloadFile(imageUrl);
-
+      console.log(image, 'image');
       await bot.api.sendPhoto(telegram_id, new InputFile(image));
-
-      const balanceOperationResult = await processBalanceOperation(telegram_id, imageGenerationCost, is_ru);
-      if (!balanceOperationResult.success) {
-        throw new Error(balanceOperationResult.error);
-      }
 
       await bot.api.sendMessage(
         telegram_id,
         is_ru
-          ? `Сгенерировать еще?\n\nСтоимость: ${imageGenerationCost.toFixed(2)} ⭐️\nВаш новый баланс: ${balanceOperationResult.newBalance.toFixed(
+          ? `Ваше изображение сгенерировано!\n\nСгенерировать еще?\n\nСтоимость: ${textToImageGenerationCost.toFixed(
               2,
-            )} ⭐️`
-          : `Generate more?\n\nCost: ${imageGenerationCost.toFixed(2)} ⭐️\nYour new balance: ${balanceOperationResult.newBalance.toFixed(2)} ⭐️`,
+            )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
+          : `Your image has been generated!\n\nGenerate more?\n\nCost: ${textToImageGenerationCost.toFixed(
+              2,
+            )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
         {
           reply_markup: {
             inline_keyboard: [
@@ -66,10 +64,8 @@ export const generateImage = async (
                 { text: '3️⃣', callback_data: `generate_3_${prompt_id}` },
                 { text: '4️⃣', callback_data: `generate_4_${prompt_id}` },
               ],
-              [
-                { text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt', callback_data: `improve_photo_${prompt_id}` },
-                { text: is_ru ? '📐 Изменить размер' : '📐 Change size', callback_data: 'change_size' },
-              ],
+              [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt', callback_data: `improve_photo_${prompt_id}` }],
+              [{ text: is_ru ? '📐 Изменить размер' : '📐 Change size', callback_data: 'change_size' }],
             ],
           },
         },

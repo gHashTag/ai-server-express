@@ -22,7 +22,7 @@ export async function generateNeuroImage(
   try {
     // Проверка баланса для всех изображений
     const totalCost = imageNeuroGenerationCost * num_images;
-    const balanceCheck = await processBalanceOperation(telegram_id, totalCost, is_ru);
+    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: totalCost, is_ru });
     if (!balanceCheck.success) {
       throw new Error(balanceCheck.error);
     }
@@ -110,10 +110,8 @@ export async function generateNeuroImage(
               { text: '3️⃣', callback_data: `generate_3_${results[0]?.prompt_id}` },
               { text: '4️⃣', callback_data: `generate_4_${results[0]?.prompt_id}` },
             ],
-            [
-              { text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt', callback_data: `improve_neuro_photo_${results[0]?.prompt_id}` },
-              { text: is_ru ? '📐 Изменить размер' : '📐 Change size', callback_data: 'change_size' },
-            ],
+            [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt', callback_data: `improve_neuro_photo_${results[0]?.prompt_id}` }],
+            [{ text: is_ru ? '📐 Изменить размер' : '📐 Change size', callback_data: 'change_size' }],
           ],
         },
       },

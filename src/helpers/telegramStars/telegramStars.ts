@@ -5,7 +5,7 @@ const starCost = 0.016;
 
 const trainingCostInStars = 50 / starCost;
 const promptGenerationCost = 0.048 / starCost;
-const imageGenerationCost = 0.12 / starCost;
+const textToImageGenerationCost = 0.12 / starCost;
 const imageNeuroGenerationCost = 0.12 / starCost;
 const textToVideoGenerationCost = 0.99 / starCost;
 const textToVideoCost = 0.99 / starCost;
@@ -21,7 +21,15 @@ interface BalanceOperationResult {
   error?: string;
 }
 
-export async function processBalanceOperation(telegram_id: number, operationCost: number, is_ru: boolean): Promise<BalanceOperationResult> {
+export async function processBalanceOperation({
+  telegram_id,
+  operationCost,
+  is_ru,
+}: {
+  telegram_id: number;
+  operationCost: number;
+  is_ru: boolean;
+}): Promise<BalanceOperationResult> {
   try {
     // Получаем текущий баланс
     const currentBalance = await getUserBalance(telegram_id);
@@ -39,9 +47,9 @@ export async function processBalanceOperation(telegram_id: number, operationCost
         error: message,
       };
     }
-
+    console.log('operationCost', operationCost);
     // Рассчитываем новый баланс
-    const newBalance = currentBalance - operationCost;
+    const newBalance = Number(currentBalance) - Number(operationCost);
     console.log(`New balance for user ${telegram_id}:`, newBalance);
 
     // Обновляем баланс в БД
@@ -141,7 +149,7 @@ export {
   calculateStars,
   trainingCostInStars,
   sendInsufficientStarsMessage,
-  imageGenerationCost,
+  textToImageGenerationCost,
   sendBalanceMessage,
   textToVideoCost,
   sendCurrentBalanceMessage,

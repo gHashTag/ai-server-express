@@ -17,8 +17,7 @@ export const generateTextToVideo = async (
   try {
     console.log('generateTextToVideo', prompt, model, telegram_id, username, is_ru);
     // Проверка баланса для всех изображений
-    const totalCost = textToVideoGenerationCost;
-    const balanceCheck = await processBalanceOperation(telegram_id, totalCost, is_ru);
+    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: textToVideoGenerationCost, is_ru });
     if (!balanceCheck.success) {
       throw new Error(balanceCheck.error);
     }
