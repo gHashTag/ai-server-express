@@ -13,6 +13,8 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
       throw new Error('Not enough stars');
     }
 
+    bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация промпта...' : '⏳ Generating prompt...');
+
     const initResponse = await axios.post(
       'https://fancyfeast-joy-caption-alpha-two.hf.space/call/stream_chat',
       {

@@ -22,7 +22,7 @@ describe('POST /text-to-video', () => {
   it('should return 200 and start processing when valid data is provided', async () => {
     const requestBody = {
       prompt: 'Create a video of a sunset',
-      model: 'haiper',
+      videoModel: 'haiper',
       telegram_id: 123456789,
       username: 'testuser',
       is_ru: true,
@@ -38,7 +38,7 @@ describe('POST /text-to-video', () => {
     // Проверяем, что функция была вызвана с отдельными параметрами
     expect(generateTextToVideo).toHaveBeenCalledWith(
       requestBody.prompt,
-      requestBody.model,
+      requestBody.videoModel,
       requestBody.telegram_id,
       requestBody.username,
       requestBody.is_ru,
@@ -53,6 +53,6 @@ describe('POST /text-to-video', () => {
     const response = await request(app.getServer()).post('/generate/text-to-video').send(requestBody);
 
     expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message', 'Model is required');
+    expect(response.body).toHaveProperty('message', 'Video model is required');
   });
 });

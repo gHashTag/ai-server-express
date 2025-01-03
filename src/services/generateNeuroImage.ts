@@ -53,7 +53,7 @@ export async function generateNeuroImage(
       if (num_images > 1) {
         bot.api.sendMessage(
           telegram_id,
-          is_ru ? `🔥 Генерация изображения ${i + 1} из ${num_images}` : `🔥 Generating image ${i + 1} of ${num_images}`,
+          is_ru ? `⏳ Генерация изображения ${i + 1} из ${num_images}` : `⏳ Generating image ${i + 1} of ${num_images}`,
         );
       } else {
         bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...');

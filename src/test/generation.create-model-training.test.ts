@@ -37,7 +37,7 @@ describe('POST /create-model-training', () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('message', 'Model training started');
 
-    expect(generateModelTraining).toHaveBeenCalledWith('http://example.com/model.zip', 'example', 'testModel', 123456789);
+    expect(generateModelTraining).toHaveBeenCalledWith('http://example.com/model.zip', 'example', 'testModel', 123456789, true);
   });
 
   it('should return 400 when required fields are missing', async () => {

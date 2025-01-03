@@ -41,7 +41,7 @@ export const generateSpeech = async ({
       if (!process.env.ELEVENLABS_API_KEY) {
         throw new Error('ELEVENLABS_API_KEY отсутствует');
       }
-
+      bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация аудио...' : '⏳ Generating audio...');
       // Логируем попытку генерации
       console.log('Generating audio stream...');
 

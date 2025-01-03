@@ -135,20 +135,20 @@ export class GenerationController {
 
   public textToVideo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { prompt, model, telegram_id, username, is_ru } = req.body;
+      const { prompt, videoModel, telegram_id, username, is_ru } = req.body;
       if (!prompt) {
         res.status(400).json({ message: 'Prompt is required' });
         return;
       }
-      if (!model) {
-        res.status(400).json({ message: 'Model is required' });
+      if (!videoModel) {
+        res.status(400).json({ message: 'Video model is required' });
         return;
       }
 
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateTextToVideo(prompt, model, telegram_id, username, is_ru)
+      generateTextToVideo(prompt, videoModel, telegram_id, username, is_ru)
         .then(async ({ videoPath }) => {
           console.log('Генерация видео завершена:', videoPath);
         })
@@ -224,7 +224,7 @@ export class GenerationController {
       }
       res.status(200).json({ message: 'Model training started' });
 
-      generateModelTraining(zipUrl, triggerWord, modelName, telegram_id)
+      generateModelTraining(zipUrl, triggerWord, modelName, telegram_id, is_ru)
         .then(async result => {
           if (result) {
             console.log('Генерация модели завершена:', result.model_id);

@@ -1,3 +1,4 @@
+import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
 
 import { createModelTraining, updateModelTraining, ModelTrainingUpdate } from '@/core/supabase';
@@ -34,6 +35,7 @@ export async function generateModelTraining(
   triggerWord: string,
   modelName: string,
   telegram_id: string,
+  is_ru: boolean,
 ): Promise<ModelTrainingResult> {
   let currentTraining: TrainingResponse | null = null;
 
@@ -105,7 +107,7 @@ export async function generateModelTraining(
       const updatedTraining = await replicate.trainings.get(currentTraining.id);
       status = updatedTraining.status;
       console.log(`Training status: ${status}`);
-
+      bot.api.sendMessage(telegram_id, is_ru ? `⏳ Генерация модели ${modelName}...` : `⏳ Generating model ${modelName}...`);
       // Добавляем логирование деталей тренировки
       if (updatedTraining.error) {
         console.error('Training error details from Replicate:', {

@@ -9,13 +9,19 @@ import { InputFile } from 'grammy';
 
 export const generateTextToVideo = async (
   prompt: string,
-  model: string,
+  videoModel: string,
   telegram_id: number,
   username: string,
   is_ru: boolean,
 ): Promise<{ videoPath: string }> => {
   try {
-    console.log('generateTextToVideo', prompt, model, telegram_id, username, is_ru);
+    if (!prompt) throw new Error('Prompt is required');
+    if (!videoModel) throw new Error('Video model is required');
+    if (!telegram_id) throw new Error('Telegram ID is required');
+    if (!username) throw new Error('Username is required');
+    if (!is_ru) throw new Error('is_ru is required');
+
+    console.log('generateTextToVideo', prompt, videoModel, telegram_id, username, is_ru);
     // Проверка баланса для всех изображений
     const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: textToVideoGenerationCost, is_ru });
     if (!balanceCheck.success) {
@@ -23,7 +29,9 @@ export const generateTextToVideo = async (
     }
     let output: any;
 
-    if (model === 'haiper') {
+    bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
+
+    if (videoModel === 'haiper') {
       const input = {
         prompt,
         duration: 6,
@@ -74,7 +82,7 @@ export const generateTextToVideo = async (
       type: 'video',
       trigger_word: 'video',
       project_id: telegram_id,
-      storage_path: `videos/${model}/${new Date().toISOString()}`,
+      storage_path: `videos/${videoModel}/${new Date().toISOString()}`,
       public_url: videoUrl,
       text: prompt,
     });
@@ -89,6 +97,23 @@ export const generateTextToVideo = async (
     await writeFile(videoPath, videoBuffer);
 
     await bot.api.sendVideo(telegram_id, new InputFile(videoPath));
+
+    await bot.api.sendMessage(
+      telegram_id,
+      is_ru
+        ? `Ваше видео сгенерировано!\n\nСгенерировать еще?\n\nСтоимость: ${textToVideoGenerationCost.toFixed(
+            2,
+          )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
+        : `Your video has been generated!\n\nGenerate more?\n\nCost: ${textToVideoGenerationCost.toFixed(
+            2,
+          )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
+      {
+        reply_markup: {
+          keyboard: [[{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt' }]],
+          resize_keyboard: false,
+        },
+      },
+    );
 
     await sendBalanceMessage(telegram_id, balanceCheck.newBalance, textToVideoGenerationCost, is_ru);
 

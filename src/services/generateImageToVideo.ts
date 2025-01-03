@@ -23,6 +23,9 @@ export const generateImageToVideo = async (
   if (!balanceCheck.success) {
     throw new Error(balanceCheck.error);
   }
+
+  bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
+
   switch (service) {
     case 'minimax':
       const imageBuffer = await downloadFile(imageUrl);
