@@ -12,12 +12,13 @@ import { imageNeuroGenerationCost, processBalanceOperation } from '@/helpers/tel
 
 export async function generateNeuroImage(
   prompt: string,
+  model_url: `${string}/${string}` | `${string}/${string}:${string}`,
+  num_images: number,
   telegram_id: number,
   username: string,
-  num_images: number,
   is_ru: boolean,
 ): Promise<GenerationResult | null> {
-  console.log('Starting generateNeuroImage with:', { prompt, telegram_id, num_images });
+  console.log('Starting generateNeuroImage with:', { prompt, model_url, telegram_id, num_images, username, is_ru });
 
   try {
     // Проверка баланса для всех изображений
@@ -27,20 +28,6 @@ export async function generateNeuroImage(
       throw new Error(balanceCheck.error);
     }
 
-    // Получаем настройки модели один раз
-    const { data, error } = await supabase
-      .from('model_trainings')
-      .select('model_url')
-      .eq('user_id', telegram_id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error || !data) {
-      throw new Error('Model type not found for this user.');
-    }
-
-    const model_type = data.model_url;
     const aspect_ratio = await getAspectRatio(telegram_id);
     const results: GenerationResult[] = [];
     const input = {
@@ -63,12 +50,16 @@ export async function generateNeuroImage(
     // Цикл генерации изображений
     for (let i = 0; i < num_images; i++) {
       console.log(`Generating image ${i + 1} of ${num_images}`);
-      bot.api.sendMessage(
-        telegram_id,
-        is_ru ? `🔥 Генерация изображения ${i + 1} из ${num_images}` : `🔥 Generating image ${i + 1} of ${num_images}`,
-      );
+      if (num_images > 1) {
+        bot.api.sendMessage(
+          telegram_id,
+          is_ru ? `🔥 Генерация изображения ${i + 1} из ${num_images}` : `🔥 Generating image ${i + 1} of ${num_images}`,
+        );
+      } else {
+        bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...');
+      }
 
-      const output = await replicate.run(model_type, { input });
+      const output = await replicate.run(model_url, { input });
       const imageUrl = await processApiResponse(output);
 
       if (!imageUrl || imageUrl.endsWith('empty.zip')) {
@@ -77,7 +68,7 @@ export async function generateNeuroImage(
       }
 
       const image = await downloadFile(imageUrl);
-      const prompt_id = await savePrompt(prompt, model_type, imageUrl, telegram_id);
+      const prompt_id = await savePrompt(prompt, model_url, imageUrl, telegram_id);
 
       if (prompt_id === null) {
         console.error(`Failed to save prompt for image ${i + 1}`);
@@ -92,27 +83,26 @@ export async function generateNeuroImage(
 
       // Отправляем в pulse
       const pulseImage = Buffer.isBuffer(image) ? `data:image/jpeg;base64,${image.toString('base64')}` : image;
-      await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username, is_ru);
+      await pulse(pulseImage, prompt, `/${model_url}`, telegram_id, username, is_ru);
     }
 
-    // Отправляем финальное сообщение после всех изображений
     await bot.api.sendMessage(
       telegram_id,
       is_ru
-        ? `🔥 Генерация завершена!\n\nСтоимость: ${totalCost.toFixed(2)} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
-        : `🔥 Generation completed!\n\nCost: ${totalCost.toFixed(2)} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
+        ? `Ваши изображения сгенерированы!\n\nСгенерировать еще?\n\nСтоимость: ${(imageNeuroGenerationCost * num_images).toFixed(
+            2,
+          )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
+        : `Your images have been generated!\n\nGenerate more?\n\nCost: ${(imageNeuroGenerationCost * num_images).toFixed(
+            2,
+          )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
       {
         reply_markup: {
-          inline_keyboard: [
-            [
-              { text: '1️⃣', callback_data: `generate_1_${results[0]?.prompt_id}` },
-              { text: '2️⃣', callback_data: `generate_2_${results[0]?.prompt_id}` },
-              { text: '3️⃣', callback_data: `generate_3_${results[0]?.prompt_id}` },
-              { text: '4️⃣', callback_data: `generate_4_${results[0]?.prompt_id}` },
-            ],
-            [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt', callback_data: `improve_neuro_photo_${results[0]?.prompt_id}` }],
-            [{ text: is_ru ? '📐 Изменить размер' : '📐 Change size', callback_data: 'change_size' }],
+          keyboard: [
+            [{ text: '1️⃣' }, { text: '2️⃣' }, { text: '3️⃣' }, { text: '4️⃣' }],
+            [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt' }],
+            [{ text: is_ru ? '📐 Изменить размер' : '📐 Change size' }],
           ],
+          resize_keyboard: false,
         },
       },
     );

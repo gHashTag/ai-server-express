@@ -22,10 +22,11 @@ describe('POST /neuro-photo', () => {
   it('should return 200 and start processing when valid data is provided', async () => {
     const requestBody = {
       prompt: 'Create a futuristic cityscape',
+      model_url: 'ghashtag/neuro_coder_flux-dev-lora:5ff9ea5918427540563f09940bf95d6efc16b8ce9600e82bb17c2b188384e355',
+      num_images: 1,
       telegram_id: 123456789,
       username: 'testuser',
       is_ru: true,
-      num_images: 1,
     };
 
     (generateNeuroImage as jest.Mock).mockResolvedValue({
@@ -40,9 +41,10 @@ describe('POST /neuro-photo', () => {
 
     expect(generateNeuroImage).toHaveBeenCalledWith(
       requestBody.prompt,
+      requestBody.model_url,
+      requestBody.num_images,
       requestBody.telegram_id,
       requestBody.username,
-      requestBody.num_images,
       requestBody.is_ru,
     );
   });
@@ -55,6 +57,6 @@ describe('POST /neuro-photo', () => {
     const response = await request(app.getServer()).post('/generate/neuro-photo').send(requestBody);
 
     expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message', 'Prompt, telegram_id, username, and is_ru are required');
+    expect(response.body).toHaveProperty('message', 'prompt is required');
   });
 });

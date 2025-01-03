@@ -15,7 +15,7 @@ import { validateUserParams } from '@/middlewares/validateUserParams';
 export class GenerationController {
   public textToImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { prompt, model, telegram_id, username, is_ru } = req.body;
+      const { prompt, model, num_images, telegram_id, username, is_ru } = req.body;
       console.log(req.body, 'req.body');
 
       if (!prompt) {
@@ -27,11 +27,15 @@ export class GenerationController {
         res.status(400).json({ message: 'model is required' });
         return;
       }
+      if (!num_images) {
+        res.status(400).json({ message: 'num_images is required' });
+        return;
+      }
 
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateTextToImage(prompt, model, telegram_id, username, is_ru)
+      generateTextToImage(prompt, model, num_images, telegram_id, username, is_ru)
         .then(async () => {
           console.log('Генерация изображения завершена:');
           await processBalanceOperation({ telegram_id, operationCost: textToImageGenerationCost, is_ru });
@@ -46,14 +50,23 @@ export class GenerationController {
 
   public neuroPhoto = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { prompt, telegram_id, username, num_images, is_ru } = req.body;
-      if (!prompt || !telegram_id || !username || !num_images || !is_ru) {
-        res.status(400).json({ message: 'Prompt, telegram_id, username, and is_ru are required' });
+      const { prompt, model_url, num_images, telegram_id, username, is_ru } = req.body;
+      if (!prompt) {
+        res.status(400).json({ message: 'prompt is required' });
         return;
       }
+      if (!model_url) {
+        res.status(400).json({ message: 'model_url is required' });
+        return;
+      }
+      if (!num_images) {
+        res.status(400).json({ message: 'num_images is required' });
+        return;
+      }
+      validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateNeuroImage(prompt, telegram_id, username, num_images, is_ru)
+      generateNeuroImage(prompt, model_url, num_images, telegram_id, username, is_ru)
         .then(async () => {
           console.log('Генерация изображения завершена:');
         })

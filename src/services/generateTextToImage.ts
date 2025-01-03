@@ -11,21 +11,21 @@ import { textToImageGenerationCost, processBalanceOperation } from '@/helpers/te
 export const generateTextToImage = async (
   prompt: string,
   model_type: string,
+  num_images: number,
   telegram_id: number,
   username: string,
   is_ru: boolean,
-): Promise<GenerationResult> => {
+): Promise<GenerationResult[]> => {
   try {
     console.log(telegram_id, 'telegram_id generateImage');
 
-    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: textToImageGenerationCost, is_ru });
+    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: textToImageGenerationCost * num_images, is_ru });
     console.log(balanceCheck, 'balanceCheck generateImage');
     if (!balanceCheck.success) {
       throw new Error('Not enough stars');
     }
-    await bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...');
 
-    const modelConfig = models[model_type];
+    const modelConfig = models[model_type.toLowerCase()];
     console.log(modelConfig, 'modelConfig');
 
     if (!modelConfig) {
@@ -36,51 +36,61 @@ export const generateTextToImage = async (
     const input = modelConfig.getInput(`${modelConfig.word} ${prompt}`, aspect_ratio);
     console.log(input, 'input');
 
-    try {
-      const modelKey = modelConfig.key as `${string}/${string}` | `${string}/${string}:${string}`;
+    const results: GenerationResult[] = [];
 
-      const output: ApiImageResponse = (await replicate.run(modelKey, { input })) as ApiImageResponse;
-      const imageUrl = await processApiResponse(output);
-      const prompt_id = await savePrompt(prompt, modelKey, imageUrl, telegram_id);
-      const image = await downloadFile(imageUrl);
-      console.log(image, 'image');
-      await bot.api.sendPhoto(telegram_id, new InputFile(image));
+    for (let i = 0; i < num_images; i++) {
+      try {
+        const modelKey = modelConfig.key as `${string}/${string}` | `${string}/${string}:${string}`;
+        if (num_images > 1) {
+          bot.api.sendMessage(
+            telegram_id,
+            is_ru ? `🔥 Генерация изображения ${i + 1} из ${num_images}` : `🔥 Generating image ${i + 1} of ${num_images}`,
+          );
+        } else {
+          bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...');
+        }
 
-      await bot.api.sendMessage(
-        telegram_id,
-        is_ru
-          ? `Ваше изображение сгенерировано!\n\nСгенерировать еще?\n\nСтоимость: ${textToImageGenerationCost.toFixed(
-              2,
-            )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
-          : `Your image has been generated!\n\nGenerate more?\n\nCost: ${textToImageGenerationCost.toFixed(
-              2,
-            )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [
-                { text: '1️⃣', callback_data: `generate_1_${prompt_id}` },
-                { text: '2️⃣', callback_data: `generate_2_${prompt_id}` },
-                { text: '3️⃣', callback_data: `generate_3_${prompt_id}` },
-                { text: '4️⃣', callback_data: `generate_4_${prompt_id}` },
-              ],
-              [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt', callback_data: `improve_photo_${prompt_id}` }],
-              [{ text: is_ru ? '📐 Изменить размер' : '📐 Change size', callback_data: 'change_size' }],
-            ],
-          },
-        },
-      );
+        const output: ApiImageResponse = (await replicate.run(modelKey, { input })) as ApiImageResponse;
+        const imageUrl = await processApiResponse(output);
+        const prompt_id = await savePrompt(prompt, modelKey, imageUrl, telegram_id);
+        const image = await downloadFile(imageUrl);
+        console.log(image, 'image');
+        await bot.api.sendPhoto(telegram_id, new InputFile(image));
 
-      const pulseImage = Buffer.isBuffer(image) ? `data:image/jpeg;base64,${image.toString('base64')}` : image;
-      await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username, is_ru);
+        const pulseImage = Buffer.isBuffer(image) ? `data:image/jpeg;base64,${image.toString('base64')}` : image;
+        await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username, is_ru);
 
-      return { image, prompt_id };
-    } catch (error) {
-      console.error(`Попытка не удалась:`, error);
-      throw new Error('Все попытки генерации изображения исчерпаны');
+        results.push({ image, prompt_id });
+      } catch (error) {
+        console.error(`Попытка не удалась для изображения ${i + 1}:`, error);
+        throw new Error('Все попытки генерации изображения исчерпаны');
+      }
     }
+
+    await bot.api.sendMessage(
+      telegram_id,
+      is_ru
+        ? `Ваши изображения сгенерированы!\n\nСгенерировать еще?\n\nСтоимость: ${(textToImageGenerationCost * num_images).toFixed(
+            2,
+          )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
+        : `Your images have been generated!\n\nGenerate more?\n\nCost: ${(textToImageGenerationCost * num_images).toFixed(
+            2,
+          )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
+      {
+        reply_markup: {
+          keyboard: [
+            [{ text: '1️⃣' }, { text: '2️⃣' }, { text: '3️⃣' }, { text: '4️⃣' }],
+            [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt' }],
+            [{ text: is_ru ? '📐 Изменить размер' : '📐 Change size' }],
+          ],
+          resize_keyboard: false,
+        },
+      },
+    );
+
+    return results;
   } catch (error) {
-    console.error('Ошибка при генерации изображения:', error);
+    console.error('Ошибка при генерации изображений:', error);
     throw error;
   }
 };
