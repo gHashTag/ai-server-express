@@ -5,6 +5,7 @@ export interface SessionData {
   text: string;
   telegram_id: number;
 }
+export type ModelUrl = `${string}/${string}:${string}` | `${string}/${string}`;
 
 export type MyContext = Context & SessionFlavor<SessionData> & ConversationFlavor;
 

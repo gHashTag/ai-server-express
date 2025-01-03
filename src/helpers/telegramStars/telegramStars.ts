@@ -3,6 +3,23 @@ import { supabase } from '@/core/supabase';
 
 const starCost = 0.016;
 
+// Определяем тип для моделей
+export type VideoModel = 'minimax' | 'haiper' | 'ray' | 'i2vgen';
+
+// Определяем стоимость для каждой модели
+const MODEL_PRICES: Record<VideoModel, number> = {
+  minimax: 0.5,
+  haiper: 0.05,
+  ray: 0.45,
+  i2vgen: 0.45,
+};
+
+export function calculateFinalPrice(model: VideoModel): number {
+  const basePrice = MODEL_PRICES[model];
+  const interest = 0.5; // 50% interest
+  return basePrice * (1 + interest);
+}
+
 const trainingCostInStars = 20 / starCost;
 const promptGenerationCost = 0.048 / starCost;
 const textToImageGenerationCost = 0.12 / starCost;
@@ -24,11 +41,11 @@ interface BalanceOperationResult {
 
 export async function processBalanceOperation({
   telegram_id,
-  operationCost,
+  paymentAmount,
   is_ru,
 }: {
   telegram_id: number;
-  operationCost: number;
+  paymentAmount: number;
   is_ru: boolean;
 }): Promise<BalanceOperationResult> {
   try {
@@ -37,7 +54,7 @@ export async function processBalanceOperation({
     console.log(`Current balance for user ${telegram_id}:`, currentBalance);
 
     // Проверяем достаточно ли средств
-    if (currentBalance < operationCost) {
+    if (currentBalance < paymentAmount) {
       const message = is_ru
         ? 'Недостаточно средств на балансе. Пополните баланс вызвав команду /buy.'
         : 'Insufficient funds. Top up your balance by calling the /buy command.';
@@ -48,9 +65,9 @@ export async function processBalanceOperation({
         error: message,
       };
     }
-    console.log('operationCost', operationCost);
+    console.log('paymentAmount', paymentAmount);
     // Рассчитываем новый баланс
-    const newBalance = Number(currentBalance) - Number(operationCost);
+    const newBalance = Number(currentBalance) - Number(paymentAmount);
     console.log(`New balance for user ${telegram_id}:`, newBalance);
 
     // Обновляем баланс в БД

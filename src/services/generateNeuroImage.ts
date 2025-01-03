@@ -3,7 +3,6 @@ import { getAspectRatio, savePrompt } from '../core/supabase/ai';
 
 import { processApiResponse } from '@/helpers/processApiResponse';
 import { GenerationResult } from '@/interfaces/generate.interface';
-import { supabase } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import bot from '@/core/bot';
 import { InputFile } from 'grammy';

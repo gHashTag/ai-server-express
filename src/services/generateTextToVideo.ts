@@ -3,7 +3,7 @@ import { replicate } from '@/core/replicate';
 import { supabase } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import { pulse } from '@/helpers/pulse';
-import { processBalanceOperation, sendBalanceMessage, textToVideoGenerationCost } from '@/helpers/telegramStars/telegramStars';
+import { calculateFinalPrice, processBalanceOperation, sendBalanceMessage, textToVideoGenerationCost } from '@/helpers/telegramStars/telegramStars';
 import { writeFile } from 'fs/promises';
 import { InputFile } from 'grammy';
 
@@ -23,7 +23,7 @@ export const generateTextToVideo = async (
 
     console.log('generateTextToVideo', prompt, videoModel, telegram_id, username, is_ru);
     // Проверка баланса для всех изображений
-    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: textToVideoGenerationCost, is_ru });
+    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: calculateFinalPrice(videoModel as VideoModel), is_ru });
     if (!balanceCheck.success) {
       throw new Error(balanceCheck.error);
     }
@@ -109,7 +109,7 @@ export const generateTextToVideo = async (
           )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
       {
         reply_markup: {
-          keyboard: [[{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt' }]],
+          keyboard: [[{ text: is_ru ? '🎥 Сгенерировать новое видео?' : '🎥 Generate new video?' }]],
           resize_keyboard: false,
         },
       },

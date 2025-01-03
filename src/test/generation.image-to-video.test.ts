@@ -21,9 +21,11 @@ describe('POST /image-to-video', () => {
 
   it('should return 200 and start processing when valid data is provided', async () => {
     const requestBody = {
-      image: 'https://dmrooqbmxdhdyblqzswu.supabase.co/storage/v1/object/public/neuro_coder/cover01.png',
+      imageUrl:
+        'https://www.investopedia.com/thmb/YJBXk5A8fN78NMdeCk0IJKGNRuw=/750x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/GettyImages-453930217-42848c04ff58410d952e1a5b65a00929.jpg',
       prompt: 'Create a video of a dance',
-      model: 'haiper',
+      videoModel: 'haiper',
+      paymentAmount: 1,
       telegram_id: 123456789,
       username: 'testuser',
       is_ru: true,
@@ -37,9 +39,10 @@ describe('POST /image-to-video', () => {
     expect(response.body).toHaveProperty('message', 'Processing started');
 
     expect(generateImageToVideo).toHaveBeenCalledWith(
-      requestBody.image,
+      requestBody.imageUrl,
       requestBody.prompt,
-      requestBody.model,
+      requestBody.videoModel,
+      requestBody.paymentAmount,
       requestBody.telegram_id,
       requestBody.username,
       requestBody.is_ru,
