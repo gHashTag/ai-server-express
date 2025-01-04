@@ -3,13 +3,7 @@ import { replicate } from '@/core/replicate';
 import { supabase } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import { pulse } from '@/helpers/pulse';
-import {
-  processBalanceOperation,
-  imageToVideoGenerationCost,
-  sendBalanceMessage,
-  calculateFinalPrice,
-  VideoModel,
-} from '@/helpers/telegramStars/telegramStars';
+import { processBalanceOperation, imageToVideoGenerationCost, sendBalanceMessage } from '@/helpers/telegramStars/telegramStars';
 
 import { writeFile } from 'fs/promises';
 import { InputFile } from 'grammy';

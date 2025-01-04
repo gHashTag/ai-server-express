@@ -19,7 +19,7 @@ export const generateTextToImage = async (
   try {
     console.log(telegram_id, 'telegram_id generateImage');
 
-    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: textToImageGenerationCost * num_images, is_ru });
+    const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: textToImageGenerationCost * num_images, is_ru });
     console.log(balanceCheck, 'balanceCheck generateImage');
     if (!balanceCheck.success) {
       throw new Error('Not enough stars');

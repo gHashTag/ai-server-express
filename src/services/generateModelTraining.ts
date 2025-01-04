@@ -1,6 +1,9 @@
 import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
-import { createModelTraining, updateModelTraining, ModelTrainingUpdate, supabase } from '@/core/supabase';
+import { createModelTraining, updateModelTraining, supabase } from '@/core/supabase';
+import { processBalanceOperation, updateUserBalance } from '@/helpers/telegramStars/telegramStars';
+import { calculateTrainingCostInStars } from '@/helpers/telegramStars/telegramStars';
+import { getUserBalance } from '@/helpers/telegramStars/telegramStars';
 
 interface ApiError extends Error {
   response?: {
@@ -47,6 +50,15 @@ export async function generateModelTraining(
   }
 
   let currentTraining: TrainingResponse | null = null;
+  const currentBalance = await getUserBalance(Number(telegram_id));
+  const trainingCostInStars = calculateTrainingCostInStars(steps);
+  const balanceCheck = await processBalanceOperation({ telegram_id: Number(telegram_id), paymentAmount: trainingCostInStars, is_ru });
+
+  console.log(balanceCheck, 'balanceCheck generateModelTraining');
+
+  if (!balanceCheck.success) {
+    throw new Error('Not enough stars');
+  }
 
   try {
     if (!process.env.REPLICATE_USERNAME) {
@@ -88,6 +100,9 @@ export async function generateModelTraining(
         throw error;
       }
     }
+
+    // Обновляем баланс пользователя после успешной проверки
+    await updateUserBalance(Number(telegram_id), currentBalance - trainingCostInStars);
 
     // Создаем запись о тренировке
     await createModelTraining({
@@ -162,16 +177,16 @@ export async function generateModelTraining(
         urls: failedTraining.urls,
       });
 
-      await updateModelTraining(telegram_id, modelName, {
-        status: 'failed',
-        error: failedTraining.error || 'Unknown error',
-      } as ModelTrainingUpdate);
+      // Возвращаем средства в случае неудачи
+      await updateUserBalance(Number(telegram_id), currentBalance + trainingCostInStars);
 
       throw new Error(`Training failed: ${failedTraining.error || 'Unknown error'}`);
     }
 
     if (status === 'canceled') {
       console.log(`Training was canceled for ${telegram_id}`);
+      // Возвращаем средства в случае отмены
+      await updateUserBalance(Number(telegram_id), currentBalance + trainingCostInStars);
       bot.api.sendMessage(telegram_id, is_ru ? 'Генерация была отменена.' : 'Generation was canceled.');
       return {
         model_id: currentTraining.id,
@@ -189,6 +204,8 @@ export async function generateModelTraining(
       modelFile: Buffer.from(''),
     };
   } catch (error) {
+    // Возвращаем средства в случае ошибки
+    await updateUserBalance(Number(telegram_id), currentBalance + trainingCostInStars);
     console.error('Training error details:', {
       error,
       username: process.env.REPLICATE_USERNAME,
