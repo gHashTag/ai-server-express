@@ -187,7 +187,9 @@ export async function generateModelTraining(
       console.log(`Training was canceled for ${telegram_id}`);
       // Возвращаем средства в случае отмены
       await updateUserBalance(Number(telegram_id), currentBalance + trainingCostInStars);
-      bot.api.sendMessage(telegram_id, is_ru ? 'Генерация была отменена.' : 'Generation was canceled.');
+      bot.api.sendMessage(telegram_id, is_ru ? 'Генерация была отменена.' : 'Generation was canceled.', {
+        reply_markup: { remove_keyboard: true },
+      });
       return {
         model_id: currentTraining.id,
         modelFile: Buffer.from(''),

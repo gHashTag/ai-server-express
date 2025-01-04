@@ -22,7 +22,7 @@ export async function generateNeuroImage(
   try {
     // Проверка баланса для всех изображений
     const totalCost = imageNeuroGenerationCost * num_images;
-    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: totalCost, is_ru });
+    const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: totalCost, is_ru });
     if (!balanceCheck.success) {
       throw new Error(balanceCheck.error);
     }

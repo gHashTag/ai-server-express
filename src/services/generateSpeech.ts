@@ -30,7 +30,7 @@ export const generateSpeech = async ({
     apiKeyPrefix: process.env.ELEVENLABS_API_KEY?.substring(0, 5),
   });
   // Проверка баланса для всех изображений
-  const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: speechGenerationCost, is_ru });
+  const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: speechGenerationCost, is_ru });
   if (!balanceCheck.success) {
     throw new Error(balanceCheck.error);
   }
