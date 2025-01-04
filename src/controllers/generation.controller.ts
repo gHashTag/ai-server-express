@@ -238,14 +238,14 @@ export class GenerationController {
       const { triggerWord, modelName, steps, telegram_id, is_ru } = req.body;
 
       const zipFile = req.files?.find(file => file.fieldname === 'zipUrl');
+      const zipUrl = zipFile.path;
+      console.log('zipUrl', zipUrl);
 
       if (!zipFile || !triggerWord || !modelName || telegram_id || typeof is_ru !== 'boolean') {
         res.status(400).json({ message: 'zipUrl, triggerWord, modelName, telegram_id, and is_ru are required' });
         return;
       }
 
-      const zipUrl = zipFile.path; // Убедитесь, что файл сохраняется на диск
-      console.log('zipUrl', zipUrl);
       await generateModelTraining(zipUrl, triggerWord, modelName, steps, telegram_id, is_ru);
 
       res.status(200).json({ message: 'Model training started' });

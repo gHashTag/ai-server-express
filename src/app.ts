@@ -15,6 +15,7 @@ import { Server } from 'http';
 import { GenerationController } from './controllers/generation.controller';
 import path from 'path';
 import fs from 'fs';
+import morgan from 'morgan';
 // Создаем директорию, если она не существует
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -93,6 +94,7 @@ export class App {
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());
     this.app.use(upload.any());
+    this.app.use(morgan('combined'));
     this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
   }
 
