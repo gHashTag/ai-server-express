@@ -237,14 +237,35 @@ export class GenerationController {
 
       const { triggerWord, modelName, steps, telegram_id, is_ru } = req.body;
 
-      const zipFile = req.files?.find(file => file.fieldname === 'zipUrl');
-      const zipUrl = zipFile.path;
-      console.log('zipUrl', zipUrl);
-
-      if (!zipFile || !triggerWord || !modelName || telegram_id || typeof is_ru !== 'boolean') {
-        res.status(400).json({ message: 'zipUrl, triggerWord, modelName, telegram_id, and is_ru are required' });
+      if (!triggerWord) {
+        res.status(400).json({ message: 'triggerWord is required' });
         return;
       }
+      if (!modelName) {
+        res.status(400).json({ message: 'modelName is required' });
+        return;
+      }
+      if (!steps) {
+        res.status(400).json({ message: 'steps is required' });
+        return;
+      }
+      if (!telegram_id) {
+        res.status(400).json({ message: 'telegram_id is required' });
+        return;
+      }
+      if (!is_ru) {
+        res.status(400).json({ message: 'is_ru is required' });
+        return;
+      }
+      const zipFile = req.files?.find(file => file.fieldname === 'zipUrl');
+      if (!zipFile) {
+        console.log('zipFile is required', zipFile);
+        res.status(400).json({ message: 'zipFile is required' });
+        return;
+      }
+      // Создаем URL для доступа к файлу
+      const zipUrl = `https://${req.headers.host}/uploads/${zipFile.filename}`;
+      console.log('zipUrl', zipUrl);
 
       await generateModelTraining(zipUrl, triggerWord, modelName, steps, telegram_id, is_ru);
 
