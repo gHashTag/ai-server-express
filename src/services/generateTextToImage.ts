@@ -47,7 +47,9 @@ export const generateTextToImage = async (
             is_ru ? `⏳ Генерация изображения ${i + 1} из ${num_images}` : `⏳ Generating image ${i + 1} of ${num_images}`,
           );
         } else {
-          bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...');
+          bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...', {
+            reply_markup: { remove_keyboard: true },
+          });
         }
 
         const output: ApiImageResponse = (await replicate.run(modelKey, { input })) as ApiImageResponse;
@@ -80,8 +82,8 @@ export const generateTextToImage = async (
         reply_markup: {
           keyboard: [
             [{ text: '1️⃣' }, { text: '2️⃣' }, { text: '3️⃣' }, { text: '4️⃣' }],
-            [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt' }],
-            [{ text: is_ru ? '📐 Изменить размер' : '📐 Change size' }],
+            [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt' }, { text: is_ru ? '📐 Изменить размер' : '📐 Change size' }],
+            [{ text: is_ru ? '🏠 Главное меню' : '🏠 Main menu' }],
           ],
           resize_keyboard: false,
         },
