@@ -1,6 +1,5 @@
 import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
-
 import { createModelTraining, updateModelTraining, ModelTrainingUpdate, supabase } from '@/core/supabase';
 
 interface ApiError extends Error {
@@ -29,6 +28,8 @@ interface ModelTrainingResult {
   model_id: string;
   modelFile: Buffer; // Или другой тип, который вы используете для файла модели
 }
+
+const activeTrainings = new Map<string, { cancel: () => void }>();
 
 export async function generateModelTraining(
   zipUrl: string,
@@ -68,7 +69,7 @@ export async function generateModelTraining(
       modelExists = true;
       console.log('Model already exists:', model);
     } catch (error) {
-      if (error.response?.status !== 404) {
+      if ((error as ApiError).response?.status !== 404) {
         throw error;
       }
     }
@@ -118,6 +119,15 @@ export async function generateModelTraining(
       },
     );
 
+    // Добавляем возможность отмены
+    const trainingProcess = {
+      cancel: () => {
+        console.log(`Отмена генерации для ${telegram_id}`);
+        activeTrainings.delete(telegram_id);
+      },
+    };
+    activeTrainings.set(telegram_id, trainingProcess);
+
     // Обновляем запись с ID тренировки
     await updateModelTraining(telegram_id, modelName, {
       replicate_training_id: currentTraining.id,
@@ -125,7 +135,7 @@ export async function generateModelTraining(
 
     // Ждем завершения тренировки
     let status = currentTraining.status;
-    while (status !== 'succeeded' && status !== 'failed') {
+    while (status !== 'succeeded' && status !== 'failed' && status !== 'canceled') {
       await new Promise(resolve => setTimeout(resolve, 10000));
       const updatedTraining = await replicate.trainings.get(currentTraining.id);
       status = updatedTraining.status;
@@ -160,6 +170,15 @@ export async function generateModelTraining(
       throw new Error(`Training failed: ${failedTraining.error || 'Unknown error'}`);
     }
 
+    if (status === 'canceled') {
+      console.log(`Training was canceled for ${telegram_id}`);
+      bot.api.sendMessage(telegram_id, is_ru ? 'Генерация была отменена.' : 'Generation was canceled.');
+      return {
+        model_id: currentTraining.id,
+        modelFile: Buffer.from(''),
+      };
+    }
+
     await updateModelTraining(telegram_id, modelName, {
       status: 'completed',
       model_url: currentTraining.urls.get,
@@ -182,5 +201,8 @@ export async function generateModelTraining(
       throw new Error(`Ошибка при создании или доступе к модели. Проверьте REPLICATE_USERNAME (${process.env.REPLICATE_USERNAME}) и права доступа.`);
     }
     throw error;
+  } finally {
+    // Удаляем процесс из активных после завершения
+    activeTrainings.delete(telegram_id);
   }
 }
