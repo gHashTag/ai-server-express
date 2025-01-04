@@ -1,7 +1,7 @@
 import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
 
-import { createModelTraining, updateModelTraining, ModelTrainingUpdate } from '@/core/supabase';
+import { createModelTraining, updateModelTraining, ModelTrainingUpdate, supabase } from '@/core/supabase';
 
 interface ApiError extends Error {
   response?: {
@@ -34,9 +34,17 @@ export async function generateModelTraining(
   zipUrl: string,
   triggerWord: string,
   modelName: string,
+  steps: number,
   telegram_id: string,
   is_ru: boolean,
 ): Promise<ModelTrainingResult> {
+  console.log('CASE: generateModelTraining', zipUrl, triggerWord, modelName, telegram_id, is_ru);
+
+  const userExists = await supabase.from('users').select('id').eq('telegram_id', telegram_id).single();
+  if (!userExists.data) {
+    throw new Error(`User with ID ${telegram_id} does not exist.`);
+  }
+
   let currentTraining: TrainingResponse | null = null;
 
   try {
@@ -53,16 +61,31 @@ export async function generateModelTraining(
       zipUrl,
     });
 
-    // Сначала создаем модель
+    // Проверяем, существует ли модель
+    let modelExists = false;
     try {
-      const model = await replicate.models.create(process.env.REPLICATE_USERNAME, modelName, {
-        description: `LoRA model trained with trigger word: ${triggerWord}`,
-        visibility: 'public',
-        hardware: 'gpu-t4',
-      });
-      console.log('Model created:', model);
+      const model = await replicate.models.get(process.env.REPLICATE_USERNAME, modelName);
+      modelExists = true;
+      console.log('Model already exists:', model);
     } catch (error) {
-      console.error('Ошибка API:', error.message);
+      if (error.response?.status !== 404) {
+        throw error;
+      }
+    }
+
+    // Создаем модель, если она не существует
+    if (!modelExists) {
+      try {
+        const model = await replicate.models.create(process.env.REPLICATE_USERNAME, modelName, {
+          description: `LoRA model trained with trigger word: ${triggerWord}`,
+          visibility: 'public',
+          hardware: 'gpu-t4',
+        });
+        console.log('Model created:', model);
+      } catch (error) {
+        console.error('Ошибка API при создании модели:', error.message);
+        throw error;
+      }
     }
 
     // Создаем запись о тренировке
@@ -81,7 +104,7 @@ export async function generateModelTraining(
       {
         destination,
         input: {
-          steps: 5000,
+          steps,
           lora_rank: 20,
           optimizer: 'adamw8bit',
           batch_size: 1,
@@ -108,7 +131,6 @@ export async function generateModelTraining(
       status = updatedTraining.status;
       console.log(`Training status: ${status}`);
       bot.api.sendMessage(telegram_id, is_ru ? `⏳ Генерация модели ${modelName}...` : `⏳ Generating model ${modelName}...`);
-      // Добавляем логирование деталей тренировки
       if (updatedTraining.error) {
         console.error('Training error details from Replicate:', {
           error: updatedTraining.error,
@@ -122,7 +144,6 @@ export async function generateModelTraining(
     }
 
     if (status === 'failed') {
-      // Получаем детали ошибки
       const failedTraining = await replicate.trainings.get(currentTraining.id);
       console.error('Training failed details:', {
         error: failedTraining.error,
@@ -139,16 +160,14 @@ export async function generateModelTraining(
       throw new Error(`Training failed: ${failedTraining.error || 'Unknown error'}`);
     }
 
-    // Обновляем URL модели
     await updateModelTraining(telegram_id, modelName, {
       status: 'completed',
       model_url: currentTraining.urls.get,
     });
 
-    // Предположим, что model_id и modelFile получены из currentTraining или другого источника
     return {
       model_id: currentTraining.id,
-      modelFile: Buffer.from(''), // Замените на фактический файл модели
+      modelFile: Buffer.from(''),
     };
   } catch (error) {
     console.error('Training error details:', {

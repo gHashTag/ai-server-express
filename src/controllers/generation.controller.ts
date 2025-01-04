@@ -38,7 +38,7 @@ export class GenerationController {
       generateTextToImage(prompt, model, num_images, telegram_id, username, is_ru)
         .then(async () => {
           console.log('Генерация изображения завершена:');
-          await processBalanceOperation({ telegram_id, operationCost: textToImageGenerationCost, is_ru });
+          await processBalanceOperation({ telegram_id, paymentAmount: textToImageGenerationCost, is_ru });
         })
         .catch(error => {
           console.error('Ошибка при генерации изображения:', error);
@@ -231,29 +231,26 @@ export class GenerationController {
 
   public createModelTraining = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { zipUrl, triggerWord, modelName, telegram_id, is_ru } = req.body;
-      if (!zipUrl || !triggerWord || !modelName || !telegram_id || !is_ru) {
+      console.log('Headers:', req.headers);
+      console.log('Body:', req.body);
+      console.log('Files:', req.files);
+
+      const { triggerWord, modelName, steps, telegram_id, is_ru } = req.body;
+
+      const zipFile = req.files?.find(file => file.fieldname === 'zipUrl');
+
+      if (!zipFile || !triggerWord || !modelName || telegram_id || typeof is_ru !== 'boolean') {
         res.status(400).json({ message: 'zipUrl, triggerWord, modelName, telegram_id, and is_ru are required' });
         return;
       }
-      res.status(200).json({ message: 'Model training started' });
 
-      generateModelTraining(zipUrl, triggerWord, modelName, telegram_id, is_ru)
-        .then(async result => {
-          if (result) {
-            console.log('Генерация модели завершена:', result.model_id);
-            const message = is_ru
-              ? `Тренировка модели завершена. Вы можете воспользоваться командой /neuro_photo.`
-              : `Model training completed. You can use the command /neuro_photo.`;
-            await bot.api.sendMessage(telegram_id, message);
-          } else {
-            console.error('Ошибка при генерации модели.');
-          }
-        })
-        .catch(error => {
-          console.error('Ошибка при генерации модели:', error);
-        });
+      const zipUrl = zipFile.path; // Убедитесь, что файл сохраняется на диск
+      console.log('zipUrl', zipUrl);
+      await generateModelTraining(zipUrl, triggerWord, modelName, steps, telegram_id, is_ru);
+
+      res.status(200).json({ message: 'Model training started' });
     } catch (error) {
+      console.error('Ошибка при обработке запроса:', error);
       next(error);
     }
   };

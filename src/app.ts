@@ -1,19 +1,43 @@
 import 'reflect-metadata';
+import express, { Application } from 'express';
+import multer from 'multer';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express, { Application } from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
-
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { NODE_ENV, PORT, LOG_FORMAT, ORIGIN, CREDENTIALS } from '@config';
 import { Routes } from '@interfaces/routes.interface';
-
 import { getDynamicLogger, logger } from '@utils/logger';
 import { Server } from 'http';
 import { GenerationController } from './controllers/generation.controller';
+import path from 'path';
+import fs from 'fs';
+// Создаем директорию, если она не существует
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+// Настройка хранилища для multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir); // Укажите директорию для сохранения файлов
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname); // Используйте уникальное имя файла
+  },
+});
+
+const upload = multer({ storage: storage });
+
+declare module 'express' {
+  interface Request {
+    files?: Express.Multer.File[];
+  }
+}
 
 export class App {
   public app: Application;
@@ -68,6 +92,8 @@ export class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());
+    this.app.use(upload.any());
+    this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
   }
 
   private initializeRoutes(routes: Routes[]) {

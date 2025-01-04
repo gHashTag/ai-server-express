@@ -7,7 +7,7 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
   try {
     console.log('generateImageToPrompt', imageUrl, telegram_id, username, is_ru);
     console.log('imageToPromptCost', imageToPromptCost);
-    const balanceCheck = await processBalanceOperation({ telegram_id, operationCost: imageToPromptCost, is_ru });
+    const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: imageToPromptCost, is_ru });
     console.log('balanceCheck', balanceCheck);
     if (!balanceCheck.success) {
       throw new Error('Not enough stars');

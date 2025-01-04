@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { App } from '@/app';
 import { AuthRoute } from '@routes/auth.route';
 import { UserRoute } from '@routes/users.route';
