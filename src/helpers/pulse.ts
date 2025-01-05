@@ -23,7 +23,7 @@ export const pulse = async (image: string, prompt: string, command: string, tele
     const imageBuffer = Buffer.from(imageToSend, 'base64');
 
     // Отправляем изображение как Buffer
-    await bot.telegram.sendPhoto(-2298297094, { source: imageBuffer }, { caption });
+    await bot.telegram.sendPhoto('@neuro_blogger_pulse', { source: imageBuffer }, { caption });
   } catch (error) {
     console.error('Ошибка при отправке пульса:', error);
     throw new Error('Ошибка при отправке пульса');
