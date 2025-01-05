@@ -13,19 +13,21 @@ export const pulse = async (image: string, prompt: string, command: string, tele
           username || 'User without username'
         } Telegram ID: ${telegram_id} generated an image with a prompt: ${truncatedPrompt} \n\n Command: ${command}`;
 
-    // Если изображение начинается с data:image/, нужно получить только base64
+    // if image starts with data:image/, get only base64
     let imageToSend = image;
     if (image.startsWith('data:image/')) {
       imageToSend = image.split(',')[1];
     }
 
-    // Преобразуем base64 в буфер
+    // convert base64 to buffer
     const imageBuffer = Buffer.from(imageToSend, 'base64');
 
-    // Отправляем изображение как Buffer
-    await bot.telegram.sendPhoto('@neuro_blogger_pulse', { source: imageBuffer }, { caption });
+    const chatId = '@neuro_blogger_pulse' as string; // string is required!!!!
+
+    // send image as buffer
+    await bot.telegram.sendPhoto(chatId, { source: imageBuffer }, { caption });
   } catch (error) {
-    console.error('Ошибка при отправке пульса:', error);
-    throw new Error('Ошибка при отправке пульса');
+    console.error('Error sending pulse:', error);
+    throw new Error('Error sending pulse');
   }
 };

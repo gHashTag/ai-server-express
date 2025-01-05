@@ -1,1 +1,1 @@
-export * from "./telegramStars"
+export * from './telegramStars';

@@ -11,6 +11,8 @@ type User = {
 
 export class PaymentService {
   public async processPayment(OutSum: string, Email: string): Promise<void> {
+    console.log('PaymentService: OutSum', OutSum);
+    console.log('PaymentService: Email', Email);
     let stars = 0;
     if (OutSum === '1999') {
       stars = 1249;
