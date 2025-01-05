@@ -2,7 +2,7 @@ import request from 'supertest';
 import { App } from '@/app';
 import { GenerationRoute } from '@routes/generation.route';
 import { generateSpeech } from '@/services/generateSpeech';
-
+import { TELEGRAM_BOT_TOKEN } from '@/core/bot';
 jest.mock('@/services/generateSpeech', () => ({
   generateSpeech: jest.fn(),
 }));
@@ -29,7 +29,7 @@ describe('POST /text-to-speech', () => {
     };
 
     (generateSpeech as jest.Mock).mockResolvedValue({
-      audioUrl: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/voice/file_74.oga`,
+      audioUrl: `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/voice/file_74.oga`,
     });
 
     const response = await request(app.getServer()).post('/generate/text-to-speech').send(requestBody);

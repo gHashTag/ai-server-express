@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync } from 'fs';
 import winston from 'winston';
 import morgan from 'morgan';
+import { isDev } from '@/core/bot';
 
 const logDir = process.env.LOG_DIR || '/tmp/logs';
 
@@ -13,8 +14,7 @@ if (!existsSync(logDir)) {
 }
 
 // Установите уровень логирования через переменную окружения
-const logLevel = process.env.LOG_LEVEL || 'error'; // Измените 'error' на нужный уровень
-
+const logLevel = process.env.LOG_LEVEL || (isDev ? 'debug' : 'info');
 // Создаем логгер
 const logger = winston.createLogger({
   level: logLevel,

@@ -43,6 +43,7 @@
     "replicate": "^0.32.0",
     "swagger-jsdoc": "^6.2.1",
     "swagger-ui-express": "^4.5.0",
+    "telegraf": "^4.16.3",
     "tslib": "^2.8.1",
     "typedi": "^0.10.0",
     "uuid": "^11.0.3",

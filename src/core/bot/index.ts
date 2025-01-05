@@ -1,13 +1,21 @@
 import { Bot } from 'grammy';
-import { MyContextWithSession } from '@/interfaces/generate.interface';
 
 export const isDev = process.env.NODE_ENV === 'development';
 
-if (!process.env.TELEGRAM_BOT_TOKEN_DEV || !process.env.TELEGRAM_BOT_TOKEN_PROD) {
-  throw new Error('TELEGRAM_BOT_TOKEN_DEV or TELEGRAM_BOT_TOKEN_PROD is not set');
+if (!process.env.TELEGRAM_BOT_TOKEN_DEV) {
+  throw new Error('TELEGRAM_BOT_TOKEN_DEV is not set');
 }
 
-const token = isDev ? process.env.TELEGRAM_BOT_TOKEN_DEV : process.env.TELEGRAM_BOT_TOKEN_PROD;
-const bot = new Bot<MyContextWithSession>(token || '');
+if (!process.env.TELEGRAM_BOT_TOKEN_PROD) {
+  throw new Error('TELEGRAM_BOT_TOKEN_PROD is not set');
+}
+
+export const BOT_TOKEN = isDev ? process.env.TELEGRAM_BOT_TOKEN_DEV : process.env.TELEGRAM_BOT_TOKEN_PROD;
+
+if (!BOT_TOKEN) {
+  throw new Error('!!!!! BOT_TOKEN is not set !!!!!');
+}
+// Явно указываем тип Telegraf для переменной bot
+const bot: Bot = new Bot(BOT_TOKEN);
 
 export default bot;

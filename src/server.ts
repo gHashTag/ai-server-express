@@ -1,3 +1,7 @@
+import dotenv from 'dotenv';
+
+// Загружаем переменные окружения из .env файла
+dotenv.config();
 import 'reflect-metadata';
 import { App } from '@/app';
 import { AuthRoute } from '@routes/auth.route';
@@ -12,4 +16,3 @@ const routes = [new UserRoute(), new AuthRoute(), new GenerationRoute()];
 const app = new App(routes);
 
 app.listen();
-//
