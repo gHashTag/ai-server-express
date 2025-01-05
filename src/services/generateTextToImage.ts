@@ -55,7 +55,26 @@ export const generateTextToImage = async (
 
         const imageBuffer = Buffer.isBuffer(image) ? image : Buffer.from(image);
         await bot.telegram.sendPhoto(telegram_id, { source: imageBuffer });
-
+        await bot.telegram.sendMessage(
+          telegram_id,
+          is_ru
+            ? `Ваши изображения сгенерированы!\n\nСгенерировать еще?\n\nСтоимость: ${(textToImageGenerationCost * num_images).toFixed(
+                2,
+              )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
+            : `Your images have been generated!\n\nGenerate more?\n\nCost: ${(textToImageGenerationCost * num_images).toFixed(
+                2,
+              )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
+          {
+            reply_markup: {
+              keyboard: [
+                [{ text: '1️⃣' }, { text: '2️⃣' }, { text: '3️⃣' }, { text: '4️⃣' }],
+                [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt' }, { text: is_ru ? '📐 Изменить размер' : '📐 Change size' }],
+                [{ text: is_ru ? '🏠 Главное меню' : '🏠 Main menu' }],
+              ],
+              resize_keyboard: false,
+            },
+          },
+        );
         const pulseImage = Buffer.isBuffer(image) ? `data:image/jpeg;base64,${image.toString('base64')}` : image;
         await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username, is_ru);
 
@@ -65,27 +84,6 @@ export const generateTextToImage = async (
         throw new Error('Все попытки генерации изображения исчерпаны');
       }
     }
-
-    await bot.telegram.sendMessage(
-      telegram_id,
-      is_ru
-        ? `Ваши изображения сгенерированы!\n\nСгенерировать еще?\n\nСтоимость: ${(textToImageGenerationCost * num_images).toFixed(
-            2,
-          )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
-        : `Your images have been generated!\n\nGenerate more?\n\nCost: ${(textToImageGenerationCost * num_images).toFixed(
-            2,
-          )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
-      {
-        reply_markup: {
-          keyboard: [
-            [{ text: '1️⃣' }, { text: '2️⃣' }, { text: '3️⃣' }, { text: '4️⃣' }],
-            [{ text: is_ru ? '⬆️ Улучшить промпт' : '⬆️ Improve prompt' }, { text: is_ru ? '📐 Изменить размер' : '📐 Change size' }],
-            [{ text: is_ru ? '🏠 Главное меню' : '🏠 Main menu' }],
-          ],
-          resize_keyboard: false,
-        },
-      },
-    );
 
     return results;
   } catch (error) {

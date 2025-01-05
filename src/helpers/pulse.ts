@@ -1,6 +1,4 @@
-import { Telegraf } from 'telegraf';
-
-const bot = new Telegraf('YOUR_BOT_TOKEN');
+import bot from '@/core/bot';
 
 export const pulse = async (image: string, prompt: string, command: string, telegram_id: number, username: string, is_ru: boolean) => {
   try {
