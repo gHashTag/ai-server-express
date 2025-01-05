@@ -93,7 +93,7 @@ export class GenerationController {
 
   public textToSpeech = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { text, voice_id, telegram_id, username, is_ru } = req.body;
+      const { text, voice_id, telegram_id, is_ru } = req.body;
 
       if (!text) {
         res.status(400).json({ message: 'Text is required' });
@@ -106,7 +106,7 @@ export class GenerationController {
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateSpeech({ text, voice_id, telegram_id, username, is_ru });
+      generateSpeech({ text, voice_id, telegram_id, is_ru });
     } catch (error) {
       next(error);
     }

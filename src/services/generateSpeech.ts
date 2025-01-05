@@ -5,19 +5,17 @@ import elevenLabsClient from '@/core/elevenlabs';
 import bot from '@/core/bot';
 import { InputFile } from 'telegraf/typings/core/types/typegram';
 import { processBalanceOperation, sendBalanceMessage, speechGenerationCost } from '@/helpers/telegramStars/telegramStars';
-import { pulse } from '@/helpers/pulse';
 
 export const generateSpeech = async ({
   text,
   voice_id,
   telegram_id,
-  username,
   is_ru,
 }: {
   text: string;
   voice_id: string;
   telegram_id: number;
-  username: string;
+
   is_ru: boolean;
 }): Promise<{ audioUrl: string }> => {
   // Проверка баланса для всех изображений
@@ -50,7 +48,6 @@ export const generateSpeech = async ({
         const audio = { source: audioUrl };
         bot.telegram.sendAudio(telegram_id, audio as InputFile);
         sendBalanceMessage(telegram_id, balanceCheck.newBalance, speechGenerationCost, is_ru);
-        pulse(audioUrl, text, 'text-to-speech', telegram_id, username, is_ru);
         resolve({ audioUrl });
       });
 
