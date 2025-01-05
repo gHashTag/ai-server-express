@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { InputFile } from 'grammy';
+import { InputFile } from 'telegraf/typings/core/types/typegram';
 import bot from '@/core/bot';
 import { generateTextToImage } from '@/services/generateTextToImage';
 import { generateSpeech } from '@/services/generateSpeech';
@@ -158,7 +158,8 @@ export class GenerationController {
 
       generateImageToVideo(imageUrl, prompt, videoModel, paymentAmount, telegram_id, username, is_ru)
         .then(async ({ videoUrl }) => {
-          await bot.api.sendVideo(telegram_id, new InputFile(videoUrl));
+          const video = { source: videoUrl };
+          await bot.telegram.sendVideo(telegram_id, video as InputFile);
         })
         .catch(error => {
           console.error('Ошибка при генерации видео:', error);

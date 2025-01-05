@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import elevenLabsClient from '@/core/elevenlabs';
 import bot from '@/core/bot';
-import { InputFile } from 'grammy';
+import { InputFile } from 'telegraf/typings/core/types/typegram';
 import { processBalanceOperation, sendBalanceMessage, speechGenerationCost } from '@/helpers/telegramStars/telegramStars';
 import { pulse } from '@/helpers/pulse';
 
@@ -32,7 +32,7 @@ export const generateSpeech = async ({
       if (!process.env.ELEVENLABS_API_KEY) {
         throw new Error('ELEVENLABS_API_KEY отсутствует');
       }
-      bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация аудио...' : '⏳ Generating audio...');
+      bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация аудио...' : '⏳ Generating audio...');
       // Логируем попытку генерации
 
       const audioStream = await elevenLabsClient.generate({
@@ -47,7 +47,8 @@ export const generateSpeech = async ({
       audioStream.pipe(writeStream);
 
       writeStream.on('finish', () => {
-        bot.api.sendAudio(telegram_id, new InputFile(audioUrl));
+        const audio = { source: audioUrl };
+        bot.telegram.sendAudio(telegram_id, audio as InputFile);
         sendBalanceMessage(telegram_id, balanceCheck.newBalance, speechGenerationCost, is_ru);
         pulse(audioUrl, text, 'text-to-speech', telegram_id, username, is_ru);
         resolve({ audioUrl });

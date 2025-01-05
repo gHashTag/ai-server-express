@@ -1,4 +1,4 @@
-import { Bot } from 'grammy';
+import { Telegraf } from 'telegraf';
 
 export const isDev = process.env.NODE_ENV === 'development';
 
@@ -16,6 +16,6 @@ if (!BOT_TOKEN) {
   throw new Error('!!!!! BOT_TOKEN is not set !!!!!');
 }
 // Явно указываем тип Telegraf для переменной bot
-const bot: Bot = new Bot(BOT_TOKEN);
+const bot: Telegraf = new Telegraf(BOT_TOKEN);
 
 export default bot;

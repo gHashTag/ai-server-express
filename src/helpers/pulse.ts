@@ -1,6 +1,6 @@
-import bot from '@/core/bot';
+import { Telegraf } from 'telegraf';
 
-import { InputFile } from 'grammy';
+const bot = new Telegraf('YOUR_BOT_TOKEN');
 
 export const pulse = async (image: string, prompt: string, command: string, telegram_id: number, username: string, is_ru: boolean) => {
   try {
@@ -24,8 +24,8 @@ export const pulse = async (image: string, prompt: string, command: string, tele
     // Преобразуем base64 в буфер
     const imageBuffer = Buffer.from(imageToSend, 'base64');
 
-    // Отправляем как InputFile
-    await bot.api.sendPhoto(-4166575919, new InputFile(imageBuffer), { caption });
+    // Отправляем изображение как Buffer
+    await bot.telegram.sendPhoto(-4166575919, { source: imageBuffer }, { caption });
   } catch (error) {
     console.error('Ошибка при отправке пульса:', error);
     throw new Error('Ошибка при отправке пульса');

@@ -5,7 +5,7 @@ import { processApiResponse } from '@/helpers/processApiResponse';
 import { GenerationResult } from '@/interfaces/generate.interface';
 import { downloadFile } from '@/helpers/downloadFile';
 import bot from '@/core/bot';
-import { InputFile } from 'grammy';
+
 import { pulse } from '@/helpers/pulse';
 import { imageNeuroGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
 
@@ -47,12 +47,12 @@ export async function generateNeuroImage(
     // Цикл генерации изображений
     for (let i = 0; i < num_images; i++) {
       if (num_images > 1) {
-        bot.api.sendMessage(
+        bot.telegram.sendMessage(
           telegram_id,
           is_ru ? `⏳ Генерация изображения ${i + 1} из ${num_images}` : `⏳ Generating image ${i + 1} of ${num_images}`,
         );
       } else {
-        bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...', {
+        bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...', {
           reply_markup: { remove_keyboard: true },
         });
       }
@@ -74,7 +74,8 @@ export async function generateNeuroImage(
       }
 
       // Отправляем каждое изображение
-      await bot.api.sendPhoto(telegram_id, new InputFile(image));
+      const imageBuffer = Buffer.isBuffer(image) ? image : Buffer.from(image);
+      await bot.telegram.sendPhoto(telegram_id, { source: imageBuffer });
 
       // Сохраняем результат
       results.push({ image, prompt_id });
@@ -84,7 +85,7 @@ export async function generateNeuroImage(
       await pulse(pulseImage, prompt, `/${model_url}`, telegram_id, username, is_ru);
     }
 
-    await bot.api.sendMessage(
+    await bot.telegram.sendMessage(
       telegram_id,
       is_ru
         ? `Ваши изображения сгенерированы!\n\nСгенерировать еще?\n\nСтоимость: ${(imageNeuroGenerationCost * num_images).toFixed(

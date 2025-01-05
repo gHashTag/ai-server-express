@@ -10,7 +10,7 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
       throw new Error('Not enough stars');
     }
 
-    bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация промпта...' : '⏳ Generating prompt...');
+    bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация промпта...' : '⏳ Generating prompt...');
 
     const initResponse = await axios.post(
       'https://fancyfeast-joy-caption-alpha-two.hf.space/call/stream_chat',
@@ -49,7 +49,7 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
           const data = JSON.parse(line.slice(6));
           if (Array.isArray(data) && data.length > 1) {
             const caption = data[1];
-            await bot.api.sendMessage(telegram_id, '```\n' + caption + '\n```', { parse_mode: 'MarkdownV2' });
+            await bot.telegram.sendMessage(telegram_id, '```\n' + caption + '\n```', { parse_mode: 'MarkdownV2' });
             await pulse(imageUrl, caption, 'image-to-prompt', telegram_id, username, is_ru);
             await sendBalanceMessage(telegram_id, balanceCheck.newBalance, imageToPromptCost, is_ru);
             return caption;

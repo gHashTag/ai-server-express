@@ -6,7 +6,7 @@ import { pulse } from '@/helpers/pulse';
 import { processBalanceOperation, imageToVideoGenerationCost, sendBalanceMessage } from '@/helpers/telegramStars/telegramStars';
 
 import { writeFile } from 'fs/promises';
-import { InputFile } from 'grammy';
+import { InputFile } from 'telegraf/typings/core/types/typegram';
 
 interface ReplicateResponse {
   id: string;
@@ -37,7 +37,7 @@ export const generateImageToVideo = async (
     throw new Error(balanceCheck.error);
   }
 
-  bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
+  bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
 
   const runModel = async (model: `${string}/${string}` | `${string}/${string}:${string}`, input: any): Promise<ReplicateResponse> => {
     const result = (await replicate.run(model, { input })) as ReplicateResponse;
@@ -108,9 +108,9 @@ export const generateImageToVideo = async (
     const videoBuffer = await downloadFile(videoUrl);
     const videoPath = `temp_${Date.now()}.mp4`;
     await writeFile(videoPath, videoBuffer);
-
-    await bot.api.sendVideo(telegram_id, new InputFile(videoPath));
-    await bot.api.sendMessage(
+    const video = { source: videoPath };
+    await bot.telegram.sendVideo(telegram_id, video as InputFile);
+    await bot.telegram.sendMessage(
       telegram_id,
       is_ru
         ? `Ваше видео сгенерировано!\n\nСгенерировать еще?\n\nСтоимость: ${imageToVideoGenerationCost.toFixed(

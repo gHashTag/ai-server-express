@@ -3,9 +3,15 @@ import { replicate } from '@/core/replicate';
 import { supabase } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import { pulse } from '@/helpers/pulse';
-import { calculateFinalPrice, processBalanceOperation, sendBalanceMessage, textToVideoGenerationCost } from '@/helpers/telegramStars/telegramStars';
+import {
+  calculateFinalPrice,
+  processBalanceOperation,
+  sendBalanceMessage,
+  textToVideoGenerationCost,
+  VideoModel,
+} from '@/helpers/telegramStars/telegramStars';
 import { writeFile } from 'fs/promises';
-import { InputFile } from 'grammy';
+import { InputFile } from 'telegraf/typings/core/types/typegram';
 
 export const generateTextToVideo = async (
   prompt: string,
@@ -27,7 +33,7 @@ export const generateTextToVideo = async (
     }
     let output: any;
 
-    bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
+    bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
 
     if (videoModel === 'haiper') {
       const input = {
@@ -81,9 +87,10 @@ export const generateTextToVideo = async (
     const videoPath = `temp_${Date.now()}.mp4`;
     await writeFile(videoPath, videoBuffer);
 
-    await bot.api.sendVideo(telegram_id, new InputFile(videoPath));
+    const video = { source: videoPath };
+    await bot.telegram.sendVideo(telegram_id, video as InputFile);
 
-    await bot.api.sendMessage(
+    await bot.telegram.sendMessage(
       telegram_id,
       is_ru
         ? `Ваше видео сгенерировано!\n\nСгенерировать еще?\n\nСтоимость: ${textToVideoGenerationCost.toFixed(

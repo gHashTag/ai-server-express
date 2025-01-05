@@ -3,7 +3,7 @@ import { supabase } from '@/core/supabase';
 import { createVoiceElevenLabs } from '@/core/supabase/ai';
 
 export async function createAvatarVoice(fileUrl: string, telegram_id: number, username: string, isRu: boolean): Promise<string | null> {
-  await bot.api.sendMessage(telegram_id, isRu ? '⏳ Создаю голосовой аватар...' : '⏳ Creating voice avatar...');
+  await bot.telegram.sendMessage(telegram_id, isRu ? '⏳ Создаю голосовой аватар...' : '⏳ Creating voice avatar...');
 
   const voiceId = await createVoiceElevenLabs({
     fileUrl,
@@ -17,7 +17,7 @@ export async function createAvatarVoice(fileUrl: string, telegram_id: number, us
   // Сохранение voiceId в таблицу users
   const { error } = await supabase.from('users').update({ voice_id_elevenlabs: voiceId }).eq('username', username);
 
-  await bot.api.sendMessage(
+  await bot.telegram.sendMessage(
     telegram_id,
     isRu
       ? '🎤 Голос для аватара успешно создан. \n Используйте 🎙️ Текст в голос в меню, чтобы проверить'

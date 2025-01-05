@@ -16,7 +16,7 @@ export const sendPaymentNotification = async (amount: number, stars: number, tel
           } (Telegram ID: ${telegramId}) оплатил ${amount} рублей и получил ${stars} звезд.`
         : `💸 User @${username || 'User without username'} (Telegram ID: ${telegramId}) paid ${amount} RUB and received ${stars} stars.`;
 
-    await bot.api.sendMessage('-4166575919', caption);
+    await bot.telegram.sendMessage('-4166575919', caption);
   } catch (error) {
     console.error('Ошибка при отправке уведомления об оплате:', error);
     throw new Error('Ошибка при отправке уведомления об оплате');

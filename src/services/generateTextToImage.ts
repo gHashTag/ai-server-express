@@ -5,7 +5,7 @@ import { downloadFile } from '@/helpers/downloadFile';
 import { processApiResponse } from '@/helpers/processApiResponse';
 import { pulse } from '@/helpers/pulse';
 import bot from '@/core/bot';
-import { InputFile } from 'grammy';
+
 import { textToImageGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
 
 export const generateTextToImage = async (
@@ -38,12 +38,12 @@ export const generateTextToImage = async (
       try {
         const modelKey = modelConfig.key as `${string}/${string}` | `${string}/${string}:${string}`;
         if (num_images > 1) {
-          bot.api.sendMessage(
+          bot.telegram.sendMessage(
             telegram_id,
             is_ru ? `⏳ Генерация изображения ${i + 1} из ${num_images}` : `⏳ Generating image ${i + 1} of ${num_images}`,
           );
         } else {
-          bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...', {
+          bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация...' : '⏳ Generating...', {
             reply_markup: { remove_keyboard: true },
           });
         }
@@ -53,7 +53,8 @@ export const generateTextToImage = async (
         const prompt_id = await savePrompt(prompt, modelKey, imageUrl, telegram_id);
         const image = await downloadFile(imageUrl);
 
-        await bot.api.sendPhoto(telegram_id, new InputFile(image));
+        const imageBuffer = Buffer.isBuffer(image) ? image : Buffer.from(image);
+        await bot.telegram.sendPhoto(telegram_id, { source: imageBuffer });
 
         const pulseImage = Buffer.isBuffer(image) ? `data:image/jpeg;base64,${image.toString('base64')}` : image;
         await pulse(pulseImage, prompt, `/${model_type}`, telegram_id, username, is_ru);
@@ -65,7 +66,7 @@ export const generateTextToImage = async (
       }
     }
 
-    await bot.api.sendMessage(
+    await bot.telegram.sendMessage(
       telegram_id,
       is_ru
         ? `Ваши изображения сгенерированы!\n\nСгенерировать еще?\n\nСтоимость: ${(textToImageGenerationCost * num_images).toFixed(

@@ -87,7 +87,7 @@ export const processBalanceOperation = async ({
       const message = is_ru
         ? 'Недостаточно средств на балансе. Пополните баланс вызвав команду /buy.'
         : 'Insufficient funds. Top up your balance by calling the /buy command.';
-      await bot.api.sendMessage(telegram_id, message);
+      await bot.telegram.sendMessage(telegram_id, message);
       return {
         newBalance: currentBalance,
         success: false,
@@ -161,11 +161,11 @@ export const sendInsufficientStarsMessage = async (telegram_id: number, isRu: bo
     ? 'Недостаточно звезд для генерации изображения. Пополните баланс вызвав команду /buy.'
     : 'Insufficient stars for image generation. Top up your balance by calling the /buy command.';
 
-  await bot.api.sendMessage(telegram_id, message);
+  await bot.telegram.sendMessage(telegram_id, message);
 };
 
 export const sendBalanceMessage = async (telegram_id: number, newBalance: number, cost: number, isRu: boolean) => {
-  await bot.api.sendMessage(
+  await bot.telegram.sendMessage(
     telegram_id,
     isRu
       ? `Стоимость: ${cost.toFixed(2)} ⭐️\nВаш баланс: ${newBalance.toFixed(2)} ⭐️`
@@ -174,7 +174,7 @@ export const sendBalanceMessage = async (telegram_id: number, newBalance: number
 };
 
 export const sendCurrentBalanceMessage = async (telegram_id: number, isRu: boolean, currentBalance: number) => {
-  await bot.api.sendMessage(
+  await bot.telegram.sendMessage(
     telegram_id,
     isRu ? `Ваш текущий баланс: ${currentBalance.toFixed(2)} ⭐️` : `Your current balance: ${currentBalance.toFixed(2)} ⭐️`,
   );
@@ -182,6 +182,6 @@ export const sendCurrentBalanceMessage = async (telegram_id: number, isRu: boole
 };
 
 export const sendCostMessage = async (telegram_id: number, isRu: boolean, cost: number) => {
-  await bot.api.sendMessage(telegram_id, isRu ? `Стоимость: ${cost.toFixed(2)} ⭐️` : `Cost: ${cost.toFixed(2)} ⭐️`);
+  await bot.telegram.sendMessage(telegram_id, isRu ? `Стоимость: ${cost.toFixed(2)} ⭐️` : `Cost: ${cost.toFixed(2)} ⭐️`);
   return;
 };

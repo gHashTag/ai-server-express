@@ -141,7 +141,7 @@ export async function generateModelTraining(
       const updatedTraining = await replicate.trainings.get(currentTraining.id);
       status = updatedTraining.status;
 
-      bot.api.sendMessage(telegram_id, is_ru ? `⏳ Генерация модели ${modelName}...` : `⏳ Generating model ${modelName}...`);
+      bot.telegram.sendMessage(telegram_id, is_ru ? `⏳ Генерация модели ${modelName}...` : `⏳ Generating model ${modelName}...`);
       if (updatedTraining.error) {
         console.error('Training error details from Replicate:', {
           error: updatedTraining.error,
@@ -172,7 +172,7 @@ export async function generateModelTraining(
     if (status === 'canceled') {
       // Возвращаем средства в случае отмены
       await updateUserBalance(Number(telegram_id), currentBalance + trainingCostInStars);
-      bot.api.sendMessage(telegram_id, is_ru ? 'Генерация была отменена.' : 'Generation was canceled.', {
+      bot.telegram.sendMessage(telegram_id, is_ru ? 'Генерация была отменена.' : 'Generation was canceled.', {
         reply_markup: { remove_keyboard: true },
       });
       return {
