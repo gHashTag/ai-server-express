@@ -1,3 +1,4 @@
+import bot from '../bot';
 import { supabase } from './';
 
 interface Payment {
@@ -5,6 +6,22 @@ interface Payment {
   amount: number;
   date: string;
 }
+
+export const sendPaymentNotification = async (amount: number, stars: number, telegramId: string, language: string, username: string) => {
+  try {
+    const caption =
+      language === 'ru'
+        ? `💸 Пользователь @${
+            username || 'Пользователь без username'
+          } (Telegram ID: ${telegramId}) оплатил ${amount} рублей и получил ${stars} звезд.`
+        : `💸 User @${username || 'User without username'} (Telegram ID: ${telegramId}) paid ${amount} RUB and received ${stars} stars.`;
+
+    await bot.api.sendMessage('-4166575919', caption);
+  } catch (error) {
+    console.error('Ошибка при отправке уведомления об оплате:', error);
+    throw new Error('Ошибка при отправке уведомления об оплате');
+  }
+};
 
 export async function sendPaymentInfo(user_id: string, level: string): Promise<Payment[]> {
   const { data, error } = await supabase.from('payments').insert([{ user_id, level }]);
