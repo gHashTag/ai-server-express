@@ -18,6 +18,8 @@ export class PaymentService {
       stars = 3040;
     } else if (OutSum === '10000') {
       stars = 6080;
+    } else if (OutSum === '10') {
+      stars = 6;
     }
 
     if (stars > 0) {

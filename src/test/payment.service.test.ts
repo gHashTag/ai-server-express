@@ -76,6 +76,20 @@ describe('PaymentService', () => {
     expect(sendPaymentNotification).toHaveBeenCalledWith(10000, 6080, '123456', 'en', 'testuser');
   });
 
+  it('should process payment and increment balance for 10', async () => {
+    const OutSum = '10';
+    const Email = 'test@example.com';
+
+    await paymentService.processPayment(OutSum, Email);
+
+    expect(incrementBalance).toHaveBeenCalledWith({
+      telegram_id: '123456',
+      amount: 6,
+    });
+
+    expect(sendPaymentNotification).toHaveBeenCalledWith(10, 6, '123456', 'en', 'testuser');
+  });
+
   it('should not process payment if OutSum is not valid', async () => {
     const OutSum = '3000'; // Некорректное значение
     const Email = 'test@example.com';
