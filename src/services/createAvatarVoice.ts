@@ -3,15 +3,13 @@ import { supabase } from '@/core/supabase';
 import { createVoiceElevenLabs } from '@/core/supabase/ai';
 
 export async function createAvatarVoice(fileUrl: string, telegram_id: number, username: string, isRu: boolean): Promise<string | null> {
-  console.log('Received request body:', fileUrl, username, telegram_id, isRu);
-
   await bot.api.sendMessage(telegram_id, isRu ? '⏳ Создаю голосовой аватар...' : '⏳ Creating voice avatar...');
 
   const voiceId = await createVoiceElevenLabs({
     fileUrl,
     username,
   });
-  console.log(voiceId, 'voiceId');
+
   if (!voiceId) {
     throw new Error('Ошибка при создании голоса');
   }

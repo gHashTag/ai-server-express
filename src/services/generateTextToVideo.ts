@@ -20,8 +20,6 @@ export const generateTextToVideo = async (
     if (!telegram_id) throw new Error('Telegram ID is required');
     if (!username) throw new Error('Username is required');
     if (!is_ru) throw new Error('is_ru is required');
-
-    console.log('generateTextToVideo', prompt, videoModel, telegram_id, username, is_ru);
     // Проверка баланса для всех изображений
     const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: calculateFinalPrice(videoModel as VideoModel), is_ru });
     if (!balanceCheck.success) {
@@ -38,21 +36,15 @@ export const generateTextToVideo = async (
         aspect_ratio: '16:9',
         use_prompt_enhancer: true,
       };
-      console.log('Haiper model input:', input);
+
       output = await replicate.run('haiper-ai/haiper-video-2', { input });
     } else {
       const input = {
         prompt,
         prompt_optimizer: true,
       };
-      console.log('Minimax model input:', input);
-      output = await replicate.run('minimax/video-01', { input });
-    }
 
-    console.log('Raw API output:', output);
-    console.log('Output type:', typeof output);
-    if (Array.isArray(output)) {
-      console.log('Output is array of length:', output.length);
+      output = await replicate.run('minimax/video-01', { input });
     }
 
     if (!output) {
@@ -72,13 +64,8 @@ export const generateTextToVideo = async (
       throw new Error(`Unexpected output format from API: ${typeof output}`);
     }
 
-    console.log('Final video URL:', videoUrl);
-
-    const video = await downloadFile(videoUrl);
-    console.log('Video downloaded successfully, size:', video.length, 'bytes');
-
     // Сохраняем в таблицу assets
-    const { data, error } = await supabase.from('assets').insert({
+    const { error } = await supabase.from('assets').insert({
       type: 'video',
       trigger_word: 'video',
       project_id: telegram_id,
@@ -89,8 +76,6 @@ export const generateTextToVideo = async (
 
     if (error) {
       console.error('Supabase error:', error);
-    } else {
-      console.log('Video metadata saved to database:', data);
     }
     const videoBuffer = await downloadFile(videoUrl);
     const videoPath = `temp_${Date.now()}.mp4`;

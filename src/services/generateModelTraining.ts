@@ -42,8 +42,6 @@ export async function generateModelTraining(
   telegram_id: string,
   is_ru: boolean,
 ): Promise<ModelTrainingResult> {
-  console.log('CASE: generateModelTraining', zipUrl, triggerWord, modelName, telegram_id, is_ru);
-
   const userExists = await supabase.from('users').select('id').eq('telegram_id', telegram_id).single();
   if (!userExists.data) {
     throw new Error(`User with ID ${telegram_id} does not exist.`);
@@ -53,8 +51,6 @@ export async function generateModelTraining(
   const currentBalance = await getUserBalance(Number(telegram_id));
   const trainingCostInStars = calculateTrainingCostInStars(steps);
   const balanceCheck = await processBalanceOperation({ telegram_id: Number(telegram_id), paymentAmount: trainingCostInStars, is_ru });
-
-  console.log(balanceCheck, 'balanceCheck generateModelTraining');
 
   if (!balanceCheck.success) {
     throw new Error('Not enough stars');
@@ -66,20 +62,12 @@ export async function generateModelTraining(
     }
 
     const destination: `${string}/${string}` = `${process.env.REPLICATE_USERNAME}/${modelName}`;
-    console.log('Training configuration:', {
-      username: process.env.REPLICATE_USERNAME,
-      modelName,
-      destination,
-      triggerWord,
-      zipUrl,
-    });
 
     // Проверяем, существует ли модель
     let modelExists = false;
     try {
-      const model = await replicate.models.get(process.env.REPLICATE_USERNAME, modelName);
+      await replicate.models.get(process.env.REPLICATE_USERNAME, modelName);
       modelExists = true;
-      console.log('Model already exists:', model);
     } catch (error) {
       if ((error as ApiError).response?.status !== 404) {
         throw error;
@@ -94,7 +82,6 @@ export async function generateModelTraining(
           visibility: 'public',
           hardware: 'gpu-t4',
         });
-        console.log('Model created:', model);
       } catch (error) {
         console.error('Ошибка API при создании модели:', error.message);
         throw error;
@@ -137,7 +124,6 @@ export async function generateModelTraining(
     // Добавляем возможность отмены
     const trainingProcess = {
       cancel: () => {
-        console.log(`Отмена генерации для ${telegram_id}`);
         activeTrainings.delete(telegram_id);
       },
     };
@@ -154,7 +140,7 @@ export async function generateModelTraining(
       await new Promise(resolve => setTimeout(resolve, 10000));
       const updatedTraining = await replicate.trainings.get(currentTraining.id);
       status = updatedTraining.status;
-      console.log(`Training status: ${status}`);
+
       bot.api.sendMessage(telegram_id, is_ru ? `⏳ Генерация модели ${modelName}...` : `⏳ Generating model ${modelName}...`);
       if (updatedTraining.error) {
         console.error('Training error details from Replicate:', {
@@ -184,7 +170,6 @@ export async function generateModelTraining(
     }
 
     if (status === 'canceled') {
-      console.log(`Training was canceled for ${telegram_id}`);
       // Возвращаем средства в случае отмены
       await updateUserBalance(Number(telegram_id), currentBalance + trainingCostInStars);
       bot.api.sendMessage(telegram_id, is_ru ? 'Генерация была отменена.' : 'Generation was canceled.', {

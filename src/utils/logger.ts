@@ -12,12 +12,16 @@ if (!existsSync(logDir)) {
   }
 }
 
+// Установите уровень логирования через переменную окружения
+const logLevel = process.env.LOG_LEVEL || 'error'; // Измените 'error' на нужный уровень
+
 // Создаем логгер
 const logger = winston.createLogger({
-  level: 'debug',
+  level: logLevel,
   format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
-  transports: [new winston.transports.Console(), new winston.transports.File({ filename: 'combined.log' })],
+  transports: [new winston.transports.Console(), new winston.transports.File({ filename: `${logDir}/combined.log` })],
 });
+
 // Использование logger
 logger.info('Server started');
 logger.error('Error occurred');

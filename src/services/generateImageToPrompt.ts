@@ -5,10 +5,7 @@ import bot from '@/core/bot';
 
 export async function generateImageToPrompt(imageUrl: string, telegram_id: number, username: string, is_ru: boolean): Promise<string> {
   try {
-    console.log('generateImageToPrompt', imageUrl, telegram_id, username, is_ru);
-    console.log('imageToPromptCost', imageToPromptCost);
     const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: imageToPromptCost, is_ru });
-    console.log('balanceCheck', balanceCheck);
     if (!balanceCheck.success) {
       throw new Error('Not enough stars');
     }

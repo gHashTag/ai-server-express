@@ -14,7 +14,6 @@ export async function uploadVideo(filePath: string, bucket: string, fileName: st
       throw error;
     }
 
-    console.log('Видео успешно загружено:', data);
     return data;
   } catch (error) {
     console.error('Ошибка при загрузке видео:', error);

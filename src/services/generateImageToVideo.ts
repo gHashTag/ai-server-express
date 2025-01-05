@@ -24,7 +24,6 @@ export const generateImageToVideo = async (
   username: string,
   is_ru: boolean,
 ): Promise<{ videoUrl?: string; prediction_id?: string }> => {
-  console.log('generateImageToVideo', imageUrl, prompt, videoModel, telegram_id, username, is_ru);
   if (!imageUrl) throw new Error('Image is required');
   if (!prompt) throw new Error('Prompt is required');
   if (!videoModel) throw new Error('Video model is required');
@@ -33,7 +32,7 @@ export const generateImageToVideo = async (
   if (!is_ru) throw new Error('Is RU is required');
 
   const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount, is_ru });
-  console.log('balanceCheck', balanceCheck);
+
   if (!balanceCheck.success) {
     throw new Error(balanceCheck.error);
   }
@@ -42,7 +41,7 @@ export const generateImageToVideo = async (
 
   const runModel = async (model: `${string}/${string}` | `${string}/${string}:${string}`, input: any): Promise<ReplicateResponse> => {
     const result = (await replicate.run(model, { input })) as ReplicateResponse;
-    console.log('runModel', result);
+
     return result;
   };
 
@@ -92,7 +91,7 @@ export const generateImageToVideo = async (
 
   const videoUrl = result.output;
 
-  const { data, error } = await supabase.from('assets').insert({
+  const { error } = await supabase.from('assets').insert({
     type: 'video',
     trigger_word: 'video',
     project_id: telegram_id,
@@ -103,8 +102,6 @@ export const generateImageToVideo = async (
 
   if (error) {
     console.error('Supabase error:', error);
-  } else {
-    console.log('Video metadata saved to database:', data);
   }
 
   if (videoUrl) {

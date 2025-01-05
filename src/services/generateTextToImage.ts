@@ -17,24 +17,20 @@ export const generateTextToImage = async (
   is_ru: boolean,
 ): Promise<GenerationResult[]> => {
   try {
-    console.log(telegram_id, 'telegram_id generateImage');
-
     const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: textToImageGenerationCost * num_images, is_ru });
-    console.log(balanceCheck, 'balanceCheck generateImage');
+
     if (!balanceCheck.success) {
       throw new Error('Not enough stars');
     }
 
     const modelConfig = models[model_type.toLowerCase()];
-    console.log(modelConfig, 'modelConfig');
 
     if (!modelConfig) {
       throw new Error(`Неподдерживаемый тип модели: ${model_type}`);
     }
     const aspect_ratio = await getAspectRatio(telegram_id);
-    console.log(aspect_ratio, 'aspect_ratio generateImage');
+
     const input = modelConfig.getInput(`${modelConfig.word} ${prompt}`, aspect_ratio);
-    console.log(input, 'input');
 
     const results: GenerationResult[] = [];
 
@@ -56,7 +52,7 @@ export const generateTextToImage = async (
         const imageUrl = await processApiResponse(output);
         const prompt_id = await savePrompt(prompt, modelKey, imageUrl, telegram_id);
         const image = await downloadFile(imageUrl);
-        console.log(image, 'image');
+
         await bot.api.sendPhoto(telegram_id, new InputFile(image));
 
         const pulseImage = Buffer.isBuffer(image) ? `data:image/jpeg;base64,${image.toString('base64')}` : image;

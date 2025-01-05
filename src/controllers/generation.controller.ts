@@ -16,7 +16,6 @@ export class GenerationController {
   public textToImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { prompt, model, num_images, telegram_id, username, is_ru } = req.body;
-      console.log(req.body, 'req.body');
 
       if (!prompt) {
         res.status(400).json({ message: 'prompt is required' });
@@ -37,7 +36,6 @@ export class GenerationController {
 
       generateTextToImage(prompt, model, num_images, telegram_id, username, is_ru)
         .then(async () => {
-          console.log('Генерация изображения завершена:');
           await processBalanceOperation({ telegram_id, paymentAmount: textToImageGenerationCost, is_ru });
         })
         .catch(error => {
@@ -66,13 +64,9 @@ export class GenerationController {
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateNeuroImage(prompt, model_url, num_images, telegram_id, username, is_ru)
-        .then(async () => {
-          console.log('Генерация изображения завершена:');
-        })
-        .catch(error => {
-          console.error('Ошибка при генерации изображения:', error);
-        });
+      generateNeuroImage(prompt, model_url, num_images, telegram_id, username, is_ru).catch(error => {
+        console.error('Ошибка при генерации изображения:', error);
+      });
     } catch (error) {
       next(error);
     }
@@ -82,10 +76,7 @@ export class GenerationController {
     try {
       const { fileUrl, telegram_id, username, is_ru } = req.body;
 
-      console.log('Received request body:', req.body);
-
       if (!fileUrl) {
-        console.log('Missing required fields:', fileUrl);
         res.status(400).json({ message: 'fileId is required' });
         return;
       }
@@ -94,13 +85,7 @@ export class GenerationController {
 
       res.status(200).json({ message: 'Voice creation started' });
 
-      createAvatarVoice(fileUrl, telegram_id, username, is_ru)
-        .then(voiceId => {
-          console.log('Создание голоса завершено:', voiceId);
-        })
-        .catch(error => {
-          console.error('Ошибка при создании голоса:', error);
-        });
+      createAvatarVoice(fileUrl, telegram_id, username, is_ru);
     } catch (error) {
       next(error);
     }
@@ -109,7 +94,7 @@ export class GenerationController {
   public textToSpeech = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { text, voice_id, telegram_id, username, is_ru } = req.body;
-      console.log(req.body, 'req.body');
+
       if (!text) {
         res.status(400).json({ message: 'Text is required' });
         return;
@@ -121,13 +106,7 @@ export class GenerationController {
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateSpeech({ text, voice_id, telegram_id, username, is_ru })
-        .then(async ({ audioUrl }) => {
-          console.log('Генерация речи завершена:', audioUrl);
-        })
-        .catch(error => {
-          console.error('Ошибка при генерации речи:', error);
-        });
+      generateSpeech({ text, voice_id, telegram_id, username, is_ru });
     } catch (error) {
       next(error);
     }
@@ -148,13 +127,7 @@ export class GenerationController {
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateTextToVideo(prompt, videoModel, telegram_id, username, is_ru)
-        .then(async ({ videoPath }) => {
-          console.log('Генерация видео завершена:', videoPath);
-        })
-        .catch(error => {
-          console.error('Ошибка при генерации видео:', error);
-        });
+      generateTextToVideo(prompt, videoModel, telegram_id, username, is_ru);
     } catch (error) {
       next(error);
     }
@@ -182,20 +155,9 @@ export class GenerationController {
 
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
-      console.log(
-        'imageUrl, prompt, videoModel, paymentAmount, telegram_id, username, is_ru',
-        imageUrl,
-        prompt,
-        videoModel,
-        paymentAmount,
-        telegram_id,
-        username,
-        is_ru,
-      );
+
       generateImageToVideo(imageUrl, prompt, videoModel, paymentAmount, telegram_id, username, is_ru)
         .then(async ({ videoUrl }) => {
-          console.log('Генерация видео завершена:', videoUrl);
-
           await bot.api.sendVideo(telegram_id, new InputFile(videoUrl));
         })
         .catch(error => {
@@ -209,7 +171,7 @@ export class GenerationController {
   public imageToPrompt = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { image, telegram_id, username, is_ru } = req.body;
-      console.log(req.body, 'req.body');
+
       if (!image) {
         res.status(400).json({ message: 'Image is required' });
         return;
@@ -217,13 +179,7 @@ export class GenerationController {
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateImageToPrompt(image, telegram_id, username, is_ru)
-        .then(async caption => {
-          console.log('Генерация описания завершена:', caption);
-        })
-        .catch(error => {
-          console.error('Ошибка при генерации описания:', error);
-        });
+      generateImageToPrompt(image, telegram_id, username, is_ru);
     } catch (error) {
       next(error);
     }
@@ -231,10 +187,6 @@ export class GenerationController {
 
   public createModelTraining = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      console.log('Headers:', req.headers);
-      console.log('Body:', req.body);
-      console.log('Files:', req.files);
-
       const { triggerWord, modelName, steps, telegram_id, is_ru } = req.body;
 
       if (!triggerWord) {
@@ -259,13 +211,11 @@ export class GenerationController {
       }
       const zipFile = req.files?.find(file => file.fieldname === 'zipUrl');
       if (!zipFile) {
-        console.log('zipFile is required', zipFile);
         res.status(400).json({ message: 'zipFile is required' });
         return;
       }
       // Создаем URL для доступа к файлу
       const zipUrl = `https://${req.headers.host}/uploads/${zipFile.filename}`;
-      console.log('zipUrl', zipUrl);
 
       await generateModelTraining(zipUrl, triggerWord, modelName, steps, telegram_id, is_ru);
 

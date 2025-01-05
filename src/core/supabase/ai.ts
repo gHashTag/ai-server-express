@@ -44,7 +44,6 @@ export const getHistory = async (brand: string, command: string, type: string) =
     return [];
   }
 
-  console.log(data);
   return data;
 };
 
@@ -144,7 +143,6 @@ export const getGeneratedImages = async (telegram_id: number) => {
   const { data, error } = await supabase.from('users').select('count, limit').eq('telegram_id', telegram_id.toString()).single();
 
   if (error || !data) {
-    console.log('Ошибка при получении count для telegram_id:', error);
     return { count: 0, limit: 2 };
   }
 
@@ -212,7 +210,7 @@ export async function createVoiceElevenLabs({ fileUrl, username }: { fileUrl: st
 
     if (response.status === 200) {
       const result = response.data as { voice_id: string };
-      console.log('Voice created:', result);
+
       return result.voice_id;
     } else {
       console.error(`Error: ${response.status} ${response.statusText}`);
@@ -249,7 +247,7 @@ export async function createVoiceSyncLabs({ fileUrl, username }: { fileUrl: stri
 
     if (response.ok) {
       const result = (await response.json()) as { id: string };
-      console.log(result, 'result');
+
       return result.id;
     } else {
       console.error(`Error: ${response.status} ${response.statusText}`);
@@ -303,7 +301,7 @@ export const savePrompt = async (prompt: string, model_type: string, media_url?:
 
 export const getPrompt = async (prompt_id: string) => {
   const { data, error } = await supabase.from('prompts_history').select('*').eq('prompt_id', prompt_id).single();
-  console.log(data, 'data');
+
   if (error || !data) {
     console.error('Ошибка при получении промпта по prompt_id:', error);
     return null;

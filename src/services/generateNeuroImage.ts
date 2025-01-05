@@ -17,8 +17,6 @@ export async function generateNeuroImage(
   username: string,
   is_ru: boolean,
 ): Promise<GenerationResult | null> {
-  console.log('Starting generateNeuroImage with:', { prompt, model_url, telegram_id, num_images, username, is_ru });
-
   try {
     // Проверка баланса для всех изображений
     const totalCost = imageNeuroGenerationCost * num_images;
@@ -48,7 +46,6 @@ export async function generateNeuroImage(
 
     // Цикл генерации изображений
     for (let i = 0; i < num_images; i++) {
-      console.log(`Generating image ${i + 1} of ${num_images}`);
       if (num_images > 1) {
         bot.api.sendMessage(
           telegram_id,

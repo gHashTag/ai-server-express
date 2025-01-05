@@ -46,7 +46,6 @@ interface ModelConfig {
 }
 
 const getInput = (prompt: string, aspect_ratio: string) => {
-  console.log(aspect_ratio, 'getInput aspect_ratio');
   let width: number, height: number;
 
   switch (aspect_ratio) {

@@ -4,8 +4,6 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB - максимальный ра�
 
 export async function downloadFile(url: string): Promise<Buffer> {
   try {
-    console.log('Downloading from URL:', url);
-
     if (!url || typeof url !== 'string' || !url.startsWith('http')) {
       throw new Error(`Invalid URL received: ${url}`);
     }

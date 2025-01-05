@@ -20,15 +20,6 @@ export const generateSpeech = async ({
   username: string;
   is_ru: boolean;
 }): Promise<{ audioUrl: string }> => {
-  // Логируем входные данные
-  console.log('Attempting to create audio with:', {
-    voice_id,
-    textLength: text.length,
-    telegram_id,
-    username,
-    apiKeyPresent: !!process.env.ELEVENLABS_API_KEY,
-    apiKeyPrefix: process.env.ELEVENLABS_API_KEY?.substring(0, 5),
-  });
   // Проверка баланса для всех изображений
   const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: speechGenerationCost, is_ru });
   if (!balanceCheck.success) {
@@ -43,7 +34,6 @@ export const generateSpeech = async ({
       }
       bot.api.sendMessage(telegram_id, is_ru ? '⏳ Генерация аудио...' : '⏳ Generating audio...');
       // Логируем попытку генерации
-      console.log('Generating audio stream...');
 
       const audioStream = await elevenLabsClient.generate({
         voice: voice_id,
@@ -51,16 +41,12 @@ export const generateSpeech = async ({
         text,
       });
 
-      // Логируем успешную генерацию
-      console.log('Audio stream generated successfully');
-
       const audioUrl = path.join(os.tmpdir(), `audio_${Date.now()}.mp3`);
       const writeStream = createWriteStream(audioUrl);
 
       audioStream.pipe(writeStream);
 
       writeStream.on('finish', () => {
-        console.log('Audio file written successfully to:', audioUrl);
         bot.api.sendAudio(telegram_id, new InputFile(audioUrl));
         sendBalanceMessage(telegram_id, balanceCheck.newBalance, speechGenerationCost, is_ru);
         pulse(audioUrl, text, 'text-to-speech', telegram_id, username, is_ru);

@@ -18,7 +18,6 @@ export async function sendPaymentInfo(user_id: string, level: string): Promise<P
     throw new Error('No data returned after inserting payment info.');
   }
 
-  console.log('Payment info sent successfully:', data);
   return data[0];
 }
 

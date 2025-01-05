@@ -82,8 +82,6 @@ export const processBalanceOperation = async ({
   try {
     // Получаем текущий баланс
     const currentBalance = await getUserBalance(telegram_id);
-    console.log(`Current balance for user ${telegram_id}:`, currentBalance);
-
     // Проверяем достаточно ли средств
     if (currentBalance < paymentAmount) {
       const message = is_ru
@@ -96,10 +94,9 @@ export const processBalanceOperation = async ({
         error: message,
       };
     }
-    console.log('paymentAmount', paymentAmount);
+
     // Рассчитываем новый баланс
     const newBalance = Number(currentBalance) - Number(paymentAmount);
-    console.log(`New balance for user ${telegram_id}:`, newBalance);
 
     // Обновляем баланс в БД
     await updateUserBalance(telegram_id, newBalance);
@@ -132,7 +129,7 @@ export const incrementBalance = async ({ telegram_id, amount }: { telegram_id: s
 
 export const getUserBalance = async (userId: number): Promise<number> => {
   const { data, error } = await supabase.from('users').select('balance').eq('telegram_id', userId.toString()).single();
-  console.log('getUserBalance', data, error);
+
   if (error) {
     if (error.code === 'PGRST116') {
       console.error(`Пользователь с ID ${userId} не найден.`);
@@ -147,9 +144,8 @@ export const getUserBalance = async (userId: number): Promise<number> => {
 
 // Функция для обновления баланса пользователя
 export const updateUserBalance = async (userId: number, newBalance: number): Promise<void> => {
-  console.log('updateUserBalance', userId, newBalance);
   const { error } = await supabase.from('users').update({ balance: newBalance }).eq('telegram_id', userId.toString());
-  console.log('updateUserBalance', error);
+
   if (error) {
     console.error('Ошибка при обновлении баланса:', error);
     throw new Error('Не удалось обновить баланс пользователя');
