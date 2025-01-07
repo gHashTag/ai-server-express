@@ -4,6 +4,7 @@ import axios from 'axios';
 import bot from '@/core/bot';
 
 export async function generateImageToPrompt(imageUrl: string, telegram_id: number, username: string, is_ru: boolean): Promise<string> {
+  console.log('generateImageToPrompt', imageUrl, telegram_id, username, is_ru);
   try {
     const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: imageToPromptCost, is_ru });
     if (!balanceCheck.success) {

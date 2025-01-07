@@ -41,50 +41,17 @@ interface ModelConfig {
     ru: string;
     en: string;
   };
-  getInput: (prompt: string, aspect_ratio?: string) => Record<string, any>;
   price: number;
 }
 
-const getInput = (prompt: string, aspect_ratio: string) => {
-  let width: number, height: number;
-
-  switch (aspect_ratio) {
-    case '1:1':
-      width = 1024;
-      height = 1024;
-      break;
-    case '16:9':
-      width = 1368;
-      height = 768;
-      break;
-    case '9:16':
-      width = 768;
-      height = 1368;
-      break;
-    default:
-      width = 1368;
-      height = 1024;
-      break;
-  }
-
-  return {
-    prompt,
-    aspect_ratio,
-    width,
-    height,
-    negative_prompt:
-      'nsfw, erotic, violence, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry',
-  };
-};
 export const models: Record<string, ModelConfig> = {
-  flux: {
+  ['flux 1.1pro ultra']: {
     key: 'black-forest-labs/flux-1.1-pro-ultra',
     word: 'ultra realistic photograph, 8k uhd, high quality',
     description: {
       ru: '🎨 Flux - фотореалистичные изображения высокого качества',
       en: '🎨 Flux - photorealistic high quality images',
     },
-    getInput: (prompt, aspect_ratio) => getInput(prompt, aspect_ratio || '16:9'),
     price: 0.06,
   },
   sdxl: {
@@ -94,27 +61,24 @@ export const models: Record<string, ModelConfig> = {
       ru: '🎨 SDXL - фотореалистичные изображения высокого качества',
       en: '🎨 SDXL - photorealistic high quality images',
     },
-    getInput: (prompt, aspect_ratio) => getInput(prompt, aspect_ratio || '16:9'),
     price: 0.04,
   },
-  sd3: {
+  ['sd 3.5 turbo']: {
     key: 'stability-ai/stable-diffusion-3.5-large-turbo',
     word: '',
     description: {
       ru: '🎨 SD3 - фотореалистичные изображения высокого качества',
       en: '🎨 SD3 - photorealistic high quality images',
     },
-    getInput: (prompt, aspect_ratio) => getInput(prompt, aspect_ratio || '16:9'),
     price: 0.04,
   },
-  recraft: {
+  ['recraft v3']: {
     key: 'recraft-ai/recraft-v3',
     word: '',
     description: {
       ru: '🎨 Recraft - фотореалистичные изображения высокого качества',
       en: '🎨 Recraft - photorealistic high quality images',
     },
-    getInput: (prompt, aspect_ratio) => getInput(prompt, aspect_ratio || '16:9'),
     price: 0.022,
   },
   photon: {
@@ -124,7 +88,6 @@ export const models: Record<string, ModelConfig> = {
       ru: '🎨 Photon - фотореалистичные изображения высокого качества',
       en: '🎨 Photon - photorealistic high quality images',
     },
-    getInput: (prompt, aspect_ratio) => getInput(prompt, aspect_ratio || '16:9'),
     price: 0.03,
   },
   lee_solar: {
@@ -134,7 +97,6 @@ export const models: Record<string, ModelConfig> = {
       ru: '🎨 Lee Solar - астрологические изображения',
       en: '🎨 Lee Solar - astrological images',
     },
-    getInput: (prompt, aspect_ratio) => getInput(prompt, aspect_ratio || '16:9'),
     price: 0.022,
   },
   dpbelarusx: {
@@ -144,7 +106,6 @@ export const models: Record<string, ModelConfig> = {
       ru: '🎨 DPBelarusX - астрологические изображения',
       en: '🎨 DPBelarusX - astrological images',
     },
-    getInput: (prompt, aspect_ratio) => getInput(prompt, aspect_ratio || '16:9'),
     price: 0.022,
   },
   neuro_coder: {
@@ -154,7 +115,6 @@ export const models: Record<string, ModelConfig> = {
       ru: '🎨 NeuroCoder - астрологические изображения',
       en: '🎨 NeuroCoder - astrological images',
     },
-    getInput: (prompt, aspect_ratio) => getInput(prompt, aspect_ratio || '16:9'),
     price: 0.022,
   },
 };

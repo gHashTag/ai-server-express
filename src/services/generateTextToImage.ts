@@ -8,6 +8,24 @@ import bot from '@/core/bot';
 
 import { textToImageGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
 
+const supportedSizes = [
+  '1024x1024',
+  '1365x1024',
+  '1024x1365',
+  '1536x1024',
+  '1024x1536',
+  '1820x1024',
+  '1024x1820',
+  '1024x2048',
+  '2048x1024',
+  '1434x1024',
+  '1024x1434',
+  '1024x1280',
+  '1280x1024',
+  '1024x1707',
+  '1707x1024',
+];
+
 export const generateTextToImage = async (
   prompt: string,
   model_type: string,
@@ -24,13 +42,32 @@ export const generateTextToImage = async (
     }
 
     const modelConfig = models[model_type.toLowerCase()];
+    console.log(modelConfig);
 
     if (!modelConfig) {
       throw new Error(`Неподдерживаемый тип модели: ${model_type}`);
     }
+
     const aspect_ratio = await getAspectRatio(telegram_id);
 
-    const input = modelConfig.getInput(`${modelConfig.word} ${prompt}`, aspect_ratio);
+    let size;
+    if (model_type.toLowerCase() === 'recraft v3') {
+      const [widthRatio, heightRatio] = aspect_ratio.split(':').map(Number);
+      const baseWidth = 1024;
+      const calculatedHeight = Math.round((baseWidth / widthRatio) * heightRatio);
+
+      const calculatedSize = `${baseWidth}x${calculatedHeight}`;
+
+      size = supportedSizes.includes(calculatedSize) ? calculatedSize : '1024x1024';
+    } else {
+      size = undefined;
+    }
+
+    const input = {
+      prompt: `${modelConfig.word} ${prompt}`,
+      ...(size ? { size } : { aspect_ratio }),
+    };
+    console.log(input, 'input');
 
     const results: GenerationResult[] = [];
 
@@ -88,6 +125,10 @@ export const generateTextToImage = async (
     return results;
   } catch (error) {
     console.error('Ошибка при генерации изображений:', error);
+    bot.telegram.sendMessage(
+      telegram_id,
+      is_ru ? `Произошла ошибка при генерации изображений: ${error.message}` : `An error occurred during image generation: ${error.message}`,
+    );
     throw error;
   }
 };
