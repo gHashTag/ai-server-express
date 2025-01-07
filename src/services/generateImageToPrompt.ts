@@ -26,6 +26,8 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
       },
     );
 
+    console.log(initResponse.data);
+
     const eventId = initResponse.data?.event_id || initResponse.data;
     if (!eventId) {
       throw new Error('No event ID in response');
@@ -35,6 +37,8 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
     });
+
+    console.log(resultResponse.data);
 
     if (!resultResponse.data) {
       throw new Error('Image to prompt: No data in response');

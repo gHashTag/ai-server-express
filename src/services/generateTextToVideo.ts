@@ -88,7 +88,7 @@ export const generateTextToVideo = async (
     await writeFile(videoPath, videoBuffer);
 
     const video = { source: videoPath };
-    await bot.telegram.sendVideo(telegram_id, video as InputFile);
+    await bot.telegram.sendVideo(telegram_id.toString(), video as InputFile);
 
     await bot.telegram.sendMessage(
       telegram_id,
