@@ -58,9 +58,9 @@ export const generateTextToImage = async (
         await bot.telegram.sendMessage(
           telegram_id,
           is_ru
-            ? `Ваши изображения сгенерированы!\n\nСгенерировать еще?\n\nСтоимость: ${(textToImageGenerationCost * num_images).toFixed(
-                2,
-              )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
+            ? `Ваши изображения сгенерированы!\n\nЕсли хотите сгенерировать еще, то выберите количество изображений в меню 1️⃣, 2️⃣, 3️⃣, 4️⃣.\n\nСтоимость: ${(
+                textToImageGenerationCost * num_images
+              ).toFixed(2)} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
             : `Your images have been generated!\n\nGenerate more?\n\nCost: ${(textToImageGenerationCost * num_images).toFixed(
                 2,
               )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
