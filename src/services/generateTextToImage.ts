@@ -5,7 +5,7 @@ import { downloadFile } from '@/helpers/downloadFile';
 import { processApiResponse } from '@/helpers/processApiResponse';
 import { pulse } from '@/helpers/pulse';
 import bot from '@/core/bot';
-import { imageModelPrices } from '@/price';
+import { IMAGES_MODELS } from '@/helpers/IMAGES_MODELS';
 
 import { processBalanceOperation } from '@/price/helpers';
 import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
@@ -39,7 +39,7 @@ export const generateTextToImage = async (
 ): Promise<GenerationResult[]> => {
   try {
     const modelKey = model_type.toLowerCase();
-    const modelConfig = imageModelPrices[modelKey];
+    const modelConfig = IMAGES_MODELS[modelKey];
     console.log(modelConfig);
 
     if (!modelConfig) {
@@ -78,7 +78,7 @@ export const generateTextToImage = async (
 
     for (let i = 0; i < num_images; i++) {
       try {
-        const modelKey = Object.keys(imageModelPrices).find(key => key === model_type.toLowerCase()) as
+        const modelKey = Object.keys(IMAGES_MODELS).find(key => key === model_type.toLowerCase()) as
           | `${string}/${string}`
           | `${string}/${string}:${string}`;
         console.log(modelKey, 'modelKey');

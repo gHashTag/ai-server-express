@@ -1,4 +1,4 @@
-import { calculateFinalImageCostInStars } from './calculateFinalImageCostInStars';
+import { calculateFinalImageCostInStars } from '../price/helpers/calculateFinalImageCostInStars';
 
 interface ModelInfo {
   shortName: string;
@@ -12,7 +12,7 @@ interface ModelInfo {
 // Стоимость одной звезды
 export const starCost = 0.016; // USD
 
-export const imageModelPrices: Record<string, ModelInfo> = {
+export const IMAGES_MODELS: Record<string, ModelInfo> = {
   'black-forest-labs/flux-1.1-pro': {
     shortName: 'FLUX1.1 [pro]',
     description_en: `FLUX1.1 [pro] generates images six times faster than its predecessor, with improved quality and diversity. It offers a balance between speed and image quality.`,
