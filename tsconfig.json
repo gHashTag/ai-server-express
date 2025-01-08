@@ -31,7 +31,11 @@
       "@models/*": ["models/*"],
       "@routes/*": ["routes/*"],
       "@services/*": ["services/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@core/*": ["core/*"],
+      "@price/*": ["price/*"],
+      "@config/*": ["config/*"],
+      "@supabase/*": ["supabase/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.json", ".env"],

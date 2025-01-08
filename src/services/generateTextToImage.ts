@@ -5,7 +5,7 @@ import { downloadFile } from '@/helpers/downloadFile';
 import { processApiResponse } from '@/helpers/processApiResponse';
 import { pulse } from '@/helpers/pulse';
 import bot from '@/core/bot';
-import { imageModelPrices } from '@/price/models/imageModelPrices';
+import { imageModelPrices } from '@/price';
 
 import { processBalanceOperation } from '@/price/helpers';
 import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';

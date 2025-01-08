@@ -11,6 +11,18 @@ if (!process.env.TELEGRAM_BOT_TOKEN_PROD) {
   throw new Error('TELEGRAM_BOT_TOKEN_PROD is not set');
 }
 
+if (!process.env.SUPABASE_URL) {
+  throw new Error('SUPABASE_URL is not set');
+}
+
+if (!process.env.SUPABASE_SERVICE_KEY) {
+  throw new Error('SUPABASE_SERVICE_KEY is not set');
+}
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set');
+}
+
 export const BOT_TOKEN = isDev ? process.env.TELEGRAM_BOT_TOKEN_DEV : process.env.TELEGRAM_BOT_TOKEN_PROD;
 
 export const CREDENTIALS = process.env.CREDENTIALS === 'true';
