@@ -1,10 +1,10 @@
 import { App } from '@/app';
 import { GenerationRoute } from '@routes/generation.route';
-import { generateImage } from '@/services/generateImage';
+import { generateTextToImage } from '@/services/generateTextToImage';
 import request from 'supertest';
 
-jest.mock('@/services/generateImage', () => ({
-  generateImage: jest.fn().mockResolvedValue({ image: 'mockedImageBuffer' }),
+jest.mock('@/services/generateTextToImage', () => ({
+  generateTextToImage: jest.fn().mockResolvedValue({ image: 'mockedImageBuffer' }),
 }));
 
 jest.mock('@/services/generateSpeech', () => ({
@@ -28,19 +28,20 @@ describe('GenerationController', () => {
   describe('[POST] /generate/text-to-image', () => {
     it('should be called with correct arguments and return expected result', async () => {
       const prompt = 'Create a beautiful landscape';
-      const model = 'flux';
+      const model_type = 'flux';
       const telegramId = 123456789;
       const username = 'testuser';
       const is_ru = true;
+      const num_images = 1;
 
       // Замокайте возвращаемое значение функции generateImage
-      (generateImage as jest.Mock).mockResolvedValue({ image: 'mockedImageBuffer' });
+      (generateTextToImage as jest.Mock).mockResolvedValue({ image: 'mockedImageBuffer' });
 
       // Вызовите функцию generateImage
-      const result = await generateImage(prompt, model, telegramId, username, is_ru);
+      const result = await generateTextToImage(prompt, model_type, num_images, telegramId, username, is_ru);
 
       // Проверка, что generateImage была вызвана с правильными аргументами
-      expect(generateImage).toHaveBeenCalledWith(prompt, model, telegramId, username, is_ru);
+      expect(generateTextToImage).toHaveBeenCalledWith(prompt, model_type, num_images, telegramId, username, is_ru);
 
       // Проверка, что результат соответствует ожидаемому
       expect(result).toEqual({ image: 'mockedImageBuffer' });

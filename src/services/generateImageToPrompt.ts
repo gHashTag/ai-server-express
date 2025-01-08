@@ -1,7 +1,8 @@
 import { pulse } from '@/helpers/pulse';
-import { processBalanceOperation, sendBalanceMessage, imageToPromptCost } from '@/helpers/telegramStars/telegramStars';
+import { processBalanceOperation, imageToPromptCost, sendBalanceMessage } from '@/price/helpers';
 import axios from 'axios';
 import bot from '@/core/bot';
+import { errorMessage, errorMessageAdmin } from '@/helpers';
 
 export async function generateImageToPrompt(imageUrl: string, telegram_id: number, username: string, is_ru: boolean): Promise<string> {
   console.log('generateImageToPrompt', imageUrl, telegram_id, username, is_ru);
@@ -68,6 +69,8 @@ export async function generateImageToPrompt(imageUrl: string, telegram_id: numbe
     throw new Error('No valid caption found in response');
   } catch (error) {
     console.error('Joy Caption API error:', error);
+    errorMessage(error as Error, telegram_id.toString(), is_ru);
+    errorMessageAdmin(error as Error);
     throw error;
   }
 }

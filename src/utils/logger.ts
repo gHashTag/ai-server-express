@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from 'fs';
 import winston from 'winston';
 import morgan from 'morgan';
-import { isDev } from '@/core/bot';
+import { isDev } from '@/config';
 
 const logDir = process.env.LOG_DIR || '/tmp/logs';
 

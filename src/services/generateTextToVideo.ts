@@ -2,16 +2,11 @@ import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
 import { supabase } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
-import { pulse } from '@/helpers/pulse';
-import {
-  calculateFinalPrice,
-  processBalanceOperation,
-  sendBalanceMessage,
-  textToVideoGenerationCost,
-  VideoModel,
-} from '@/helpers/telegramStars/telegramStars';
+import { errorMessage, errorMessageAdmin, pulse } from '@/helpers';
+import { calculateFinalPrice, processBalanceOperation, sendBalanceMessage, textToVideoGenerationCost } from '@/price/helpers';
 import { writeFile } from 'fs/promises';
 import { InputFile } from 'telegraf/typings/core/types/typegram';
+import { VideoModel } from '@/interfaces/';
 
 export const generateTextToVideo = async (
   prompt: string,
@@ -113,6 +108,8 @@ export const generateTextToVideo = async (
 
     return { videoPath };
   } catch (error) {
+    errorMessage(error as Error, telegram_id.toString(), is_ru);
+    errorMessageAdmin(error as Error);
     console.error('Error generating video:', error);
     if (error instanceof Error) {
       console.error('Error name:', error.name);

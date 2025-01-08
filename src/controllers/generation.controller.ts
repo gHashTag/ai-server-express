@@ -7,9 +7,8 @@ import { generateTextToVideo } from '@/services/generateTextToVideo';
 import { generateImageToVideo } from '@/services/generateImageToVideo';
 import { generateImageToPrompt } from '@/services/generateImageToPrompt';
 import { generateNeuroImage } from '@/services/generateNeuroImage';
-import { createAvatarVoice } from '@/services/createAvatarVoice';
+import { createVoiceAvatar } from '@/services/createVoiceAvatar';
 import { generateModelTraining } from '@/services/generateModelTraining';
-import { processBalanceOperation, textToImageGenerationCost } from '@/helpers/telegramStars/telegramStars';
 import { validateUserParams } from '@/middlewares/validateUserParams';
 
 export class GenerationController {
@@ -34,13 +33,7 @@ export class GenerationController {
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateTextToImage(prompt, model, num_images, telegram_id, username, is_ru)
-        .then(async () => {
-          await processBalanceOperation({ telegram_id, paymentAmount: textToImageGenerationCost, is_ru });
-        })
-        .catch(error => {
-          console.error('Ошибка при генерации изображения:', error);
-        });
+      generateTextToImage(prompt, model, num_images, telegram_id, username, is_ru);
     } catch (error) {
       next(error);
     }
@@ -77,7 +70,7 @@ export class GenerationController {
       const { fileUrl, telegram_id, username, is_ru } = req.body;
 
       if (!fileUrl) {
-        res.status(400).json({ message: 'fileId is required' });
+        res.status(400).json({ message: 'fileUrl is required' });
         return;
       }
 
@@ -85,7 +78,7 @@ export class GenerationController {
 
       res.status(200).json({ message: 'Voice creation started' });
 
-      createAvatarVoice(fileUrl, telegram_id, username, is_ru);
+      createVoiceAvatar(fileUrl, telegram_id, username, is_ru);
     } catch (error) {
       next(error);
     }
@@ -103,7 +96,14 @@ export class GenerationController {
         res.status(400).json({ message: 'Voice_id is required' });
         return;
       }
-      validateUserParams(req);
+      if (!telegram_id) {
+        res.status(400).json({ message: 'Telegram_id is required' });
+        return;
+      }
+      if (!is_ru) {
+        res.status(400).json({ message: 'Is_ru is required' });
+        return;
+      }
       res.status(200).json({ message: 'Processing started' });
 
       generateSpeech({ text, voice_id, telegram_id, is_ru });

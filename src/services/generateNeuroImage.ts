@@ -7,7 +7,8 @@ import { downloadFile } from '@/helpers/downloadFile';
 import bot from '@/core/bot';
 
 import { pulse } from '@/helpers/pulse';
-import { imageNeuroGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
+import { imageNeuroGenerationCost, processBalanceOperation } from '@/price/helpers';
+import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
 
 export async function generateNeuroImage(
   prompt: string,
@@ -108,7 +109,13 @@ export async function generateNeuroImage(
 
     return results[0] || null;
   } catch (error) {
-    console.error('Error in generateNeuroImage:', error);
+    bot.telegram.sendMessage(
+      telegram_id,
+      is_ru
+        ? `Произошла ошибка при генерации изображений. Попробуйте еще раз.\n\nОшибка: ${error.message}`
+        : `An error occurred during image generation. Please try again.\n\nError: ${error.message}`,
+    );
+    errorMessageAdmin(error as Error);
     throw error;
   }
 }

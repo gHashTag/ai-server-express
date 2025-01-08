@@ -4,7 +4,8 @@ import os from 'os';
 import elevenLabsClient from '@/core/elevenlabs';
 import bot from '@/core/bot';
 import { InputFile } from 'telegraf/typings/core/types/typegram';
-import { processBalanceOperation, sendBalanceMessage, speechGenerationCost } from '@/helpers/telegramStars/telegramStars';
+import { processBalanceOperation, sendBalanceMessage, speechGenerationCost } from '@/price/helpers';
+import { errorMessageAdmin, errorMessage } from '@/helpers';
 
 export const generateSpeech = async ({
   text,
@@ -15,7 +16,6 @@ export const generateSpeech = async ({
   text: string;
   voice_id: string;
   telegram_id: number;
-
   is_ru: boolean;
 }): Promise<{ audioUrl: string }> => {
   // Проверка баланса для всех изображений
@@ -56,6 +56,8 @@ export const generateSpeech = async ({
         reject(error);
       });
     } catch (error: any) {
+      errorMessage(error as Error, telegram_id.toString(), is_ru);
+      errorMessageAdmin(error as Error);
       console.error('Error in createAudioFileFromText:', {
         message: error.message,
         statusCode: error.statusCode,

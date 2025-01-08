@@ -2,8 +2,9 @@ import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
 import { supabase } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
+import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
 import { pulse } from '@/helpers/pulse';
-import { processBalanceOperation, imageToVideoGenerationCost, sendBalanceMessage } from '@/helpers/telegramStars/telegramStars';
+import { processBalanceOperation, imageToVideoGenerationCost, sendBalanceMessage } from '@/price/helpers';
 
 import { writeFile } from 'fs/promises';
 import { InputFile } from 'telegraf/typings/core/types/typegram';
@@ -24,111 +25,125 @@ export const generateImageToVideo = async (
   username: string,
   is_ru: boolean,
 ): Promise<{ videoUrl?: string; prediction_id?: string }> => {
-  if (!imageUrl) throw new Error('Image is required');
-  if (!prompt) throw new Error('Prompt is required');
-  if (!videoModel) throw new Error('Video model is required');
-  if (!telegram_id) throw new Error('Telegram ID is required');
-  if (!username) throw new Error('Username is required');
-  if (!is_ru) throw new Error('Is RU is required');
+  try {
+    if (!imageUrl) throw new Error('Image is required');
+    if (!prompt) throw new Error('Prompt is required');
+    if (!videoModel) throw new Error('Video model is required');
+    if (!telegram_id) throw new Error('Telegram ID is required');
+    if (!username) throw new Error('Username is required');
+    if (!is_ru) throw new Error('Is RU is required');
 
-  const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount, is_ru });
+    console.log('Start generateImageToVideo', { imageUrl, prompt, videoModel, paymentAmount, telegram_id, username, is_ru });
 
-  if (!balanceCheck.success) {
-    throw new Error(balanceCheck.error);
-  }
+    const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount, is_ru });
 
-  bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
+    if (!balanceCheck.success) {
+      throw new Error(balanceCheck.error);
+    }
 
-  const runModel = async (model: `${string}/${string}` | `${string}/${string}:${string}`, input: any): Promise<ReplicateResponse> => {
-    const result = (await replicate.run(model, { input })) as ReplicateResponse;
+    bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
 
-    return result;
-  };
+    const runModel = async (model: `${string}/${string}` | `${string}/${string}:${string}`, input: any): Promise<ReplicateResponse> => {
+      const result = (await replicate.run(model, { input })) as ReplicateResponse;
 
-  let result: ReplicateResponse;
+      return result;
+    };
 
-  switch (videoModel) {
-    case 'minimax':
-      const imageBuffer = await downloadFile(imageUrl);
-      result = await runModel('minimax/video-01' as shortModelUrl, {
-        prompt,
-        first_frame_image: imageBuffer,
-      });
-      break;
+    let result: ReplicateResponse;
 
-    case 'haiper':
-      result = await runModel('haiper-ai/haiper-video-2' as shortModelUrl, {
-        prompt,
-        duration: 6,
-        aspect_ratio: '16:9',
-        use_prompt_enhancer: true,
-        frame_image_url: imageUrl,
-      });
-      break;
+    switch (videoModel) {
+      case 'minimax':
+        const imageBuffer = await downloadFile(imageUrl);
+        result = await runModel('minimax/video-01' as shortModelUrl, {
+          prompt,
+          first_frame_image: imageBuffer,
+        });
+        break;
 
-    case 'ray':
-      result = await runModel('luma/ray' as shortModelUrl, {
-        prompt,
-        aspect_ratio: '16:9',
-        loop: false,
-        start_image_url: imageUrl,
-      });
-      break;
+      case 'haiper':
+        result = await runModel('haiper-ai/haiper-video-2' as shortModelUrl, {
+          prompt,
+          duration: 6,
+          aspect_ratio: '16:9',
+          use_prompt_enhancer: true,
+          frame_image_url: imageUrl,
+        });
+        break;
 
-    case 'i2vgen':
-      result = await runModel('ali-vilab/i2vgen-xl:5821a338d00033abaaba89080a17eb8783d9a17ed710a6b4246a18e0900ccad4' as shortModelUrl, {
-        image: imageUrl,
-        prompt,
-        max_frames: 16,
-        guidance_scale: 9,
-        num_inference_steps: 50,
-      });
-      break;
+      case 'ray':
+        result = await runModel('luma/ray' as shortModelUrl, {
+          prompt,
+          aspect_ratio: '16:9',
+          loop: false,
+          start_image_url: imageUrl,
+        });
+        break;
 
-    default:
-      throw new Error('Unsupported service');
-  }
+      case 'i2vgen':
+        result = await runModel('ali-vilab/i2vgen-xl:5821a338d00033abaaba89080a17eb8783d9a17ed710a6b4246a18e0900ccad4' as shortModelUrl, {
+          image: imageUrl,
+          prompt,
+          max_frames: 16,
+          guidance_scale: 9,
+          num_inference_steps: 50,
+        });
+        break;
 
-  const videoUrl = result.output;
+      default:
+        throw new Error('Unsupported service');
+    }
 
-  const { error } = await supabase.from('assets').insert({
-    type: 'video',
-    trigger_word: 'video',
-    project_id: telegram_id,
-    storage_path: `videos/${videoModel}/${new Date().toISOString()}`,
-    public_url: videoUrl,
-    text: prompt,
-  });
+    const videoUrl = result.output;
 
-  if (error) {
-    console.error('Supabase error:', error);
-  }
+    const { error } = await supabase.from('assets').insert({
+      type: 'video',
+      trigger_word: 'video',
+      project_id: telegram_id,
+      storage_path: `videos/${videoModel}/${new Date().toISOString()}`,
+      public_url: videoUrl,
+      text: prompt,
+    });
 
-  if (videoUrl) {
-    const videoBuffer = await downloadFile(videoUrl);
-    const videoPath = `temp_${Date.now()}.mp4`;
-    await writeFile(videoPath, videoBuffer);
-    const video = { source: videoPath };
-    await bot.telegram.sendVideo(telegram_id, video as InputFile);
-    await bot.telegram.sendMessage(
+    if (error) {
+      console.error('Supabase error:', error);
+    }
+
+    if (videoUrl) {
+      const videoBuffer = await downloadFile(videoUrl);
+      const videoPath = `temp_${Date.now()}.mp4`;
+      await writeFile(videoPath, videoBuffer);
+      const video = { source: videoPath };
+      await bot.telegram.sendVideo(telegram_id, video as InputFile);
+      await bot.telegram.sendMessage(
+        telegram_id,
+        is_ru
+          ? `Ваше видео сгенерировано!\n\nСгенерировать еще?\n\nСтоимость: ${imageToVideoGenerationCost.toFixed(
+              2,
+            )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
+          : `Your video has been generated!\n\nGenerate more?\n\nCost: ${imageToVideoGenerationCost.toFixed(
+              2,
+            )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
+        {
+          reply_markup: {
+            keyboard: [[{ text: is_ru ? '🎥 Сгенерировать новое видео?' : '🎥 Generate new video?' }]],
+            resize_keyboard: false,
+          },
+        },
+      );
+      await sendBalanceMessage(telegram_id, balanceCheck.newBalance, imageToVideoGenerationCost, is_ru);
+      await pulse(videoPath, prompt, 'image-to-video', telegram_id, username, is_ru);
+    }
+
+    return { videoUrl };
+  } catch (error) {
+    console.error('Error in generateImageToVideo:', error);
+    bot.telegram.sendMessage(
       telegram_id,
       is_ru
-        ? `Ваше видео сгенерировано!\n\nСгенерировать еще?\n\nСтоимость: ${imageToVideoGenerationCost.toFixed(
-            2,
-          )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
-        : `Your video has been generated!\n\nGenerate more?\n\nCost: ${imageToVideoGenerationCost.toFixed(
-            2,
-          )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
-      {
-        reply_markup: {
-          keyboard: [[{ text: is_ru ? '🎥 Сгенерировать новое видео?' : '🎥 Generate new video?' }]],
-          resize_keyboard: false,
-        },
-      },
+        ? `Произошла ошибка при генерации видео. Попробуйте еще раз.\n\nОшибка: ${error.message}`
+        : `An error occurred during video generation. Please try again.\n\nError: ${error.message}`,
     );
-    await sendBalanceMessage(telegram_id, balanceCheck.newBalance, imageToVideoGenerationCost, is_ru);
-    await pulse(videoPath, prompt, 'image-to-video', telegram_id, username, is_ru);
+    errorMessageAdmin(error as Error);
+    throw error;
   }
-
-  return { videoUrl };
 };

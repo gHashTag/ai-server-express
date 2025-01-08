@@ -1,12 +1,15 @@
 import { ApiImageResponse, GenerationResult } from '@/interfaces/generate.interface';
-import { models, replicate } from '../core/replicate';
-import { getAspectRatio, savePrompt } from '../core/supabase/ai';
+import { replicate } from '@/core/replicate';
+import { getAspectRatio, savePrompt } from '@/core/supabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import { processApiResponse } from '@/helpers/processApiResponse';
 import { pulse } from '@/helpers/pulse';
 import bot from '@/core/bot';
+import { models } from '@/price/models/imageModelPrices';
 
-import { textToImageGenerationCost, processBalanceOperation } from '@/helpers/telegramStars/telegramStars';
+import { processBalanceOperation } from '@/price/helpers';
+import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
+import { errorMessage } from '@/helpers';
 
 const supportedSizes = [
   '1024x1024',
@@ -35,22 +38,24 @@ export const generateTextToImage = async (
   is_ru: boolean,
 ): Promise<GenerationResult[]> => {
   try {
-    const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: textToImageGenerationCost * num_images, is_ru });
-
-    if (!balanceCheck.success) {
-      throw new Error('Not enough stars');
-    }
-
-    const modelConfig = models[model_type.toLowerCase()];
+    const modelKey = model_type.toLowerCase();
+    const modelConfig = models[modelKey];
     console.log(modelConfig);
 
     if (!modelConfig) {
       throw new Error(`Неподдерживаемый тип модели: ${model_type}`);
     }
 
+    const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount: modelConfig.costPerImage * num_images, is_ru });
+    console.log(balanceCheck, 'balanceCheck');
+
+    if (!balanceCheck.success) {
+      throw new Error('Not enough stars');
+    }
+
     const aspect_ratio = await getAspectRatio(telegram_id);
 
-    let size;
+    let size: string;
     if (model_type.toLowerCase() === 'recraft v3') {
       const [widthRatio, heightRatio] = aspect_ratio.split(':').map(Number);
       const baseWidth = 1024;
@@ -64,7 +69,7 @@ export const generateTextToImage = async (
     }
 
     const input = {
-      prompt: `${modelConfig.word} ${prompt}`,
+      prompt,
       ...(size ? { size } : { aspect_ratio }),
     };
     console.log(input, 'input');
@@ -73,7 +78,8 @@ export const generateTextToImage = async (
 
     for (let i = 0; i < num_images; i++) {
       try {
-        const modelKey = modelConfig.key as `${string}/${string}` | `${string}/${string}:${string}`;
+        const modelKey = Object.keys(models).find(key => key === model_type.toLowerCase()) as `${string}/${string}` | `${string}/${string}:${string}`;
+        console.log(modelKey, 'modelKey');
         if (num_images > 1) {
           bot.telegram.sendMessage(
             telegram_id,
@@ -95,12 +101,10 @@ export const generateTextToImage = async (
         await bot.telegram.sendMessage(
           telegram_id,
           is_ru
-            ? `Ваши изображения сгенерированы!\n\nЕсли хотите сгенерировать еще, то выберите количество изображений в меню 1️⃣, 2️⃣, 3️⃣, 4️⃣.\n\nСтоимость: ${(
-                textToImageGenerationCost * num_images
-              ).toFixed(2)} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
-            : `Your images have been generated!\n\nGenerate more?\n\nCost: ${(textToImageGenerationCost * num_images).toFixed(
+            ? `Ваши изображения сгенерированы!\n\nЕсли хотите сгенерировать еще, то выберите количество изображений в меню 1️⃣, 2️⃣, 3️⃣, 4️⃣.\n\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(
                 2,
-              )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
+              )} ⭐️`
+            : `Your images have been generated!\n\nGenerate more?\n\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
           {
             reply_markup: {
               keyboard: [
@@ -118,17 +122,31 @@ export const generateTextToImage = async (
         results.push({ image, prompt_id });
       } catch (error) {
         console.error(`Попытка не удалась для изображения ${i + 1}:`, error);
-        throw new Error('Все попытки генерации изображения исчерпаны');
+
+        let errorMessageToUser = '❌ Произошла ошибка.';
+
+        // Попробуйте извлечь детали из error.message
+        if (error.message) {
+          const match = error.message.match(/{"detail":"(.*?)"/);
+          if (match && match[1]) {
+            errorMessageToUser = `❌ Ошибка: ${match[1]}`;
+          }
+        }
+
+        await bot.telegram.sendMessage(telegram_id, errorMessageToUser);
+
+        // Убедитесь, что вы не отправляете дублирующее сообщение
+        if (!errorMessageToUser.includes('control_image is required')) {
+          throw new Error('Все попытки генерации изображения исчерпаны');
+        }
       }
     }
 
     return results;
   } catch (error) {
-    console.error('Ошибка при генерации изображений:', error);
-    bot.telegram.sendMessage(
-      telegram_id,
-      is_ru ? `Произошла ошибка при генерации изображений: ${error.message}` : `An error occurred during image generation: ${error.message}`,
-    );
+    console.error('Error generating images:', error);
+    errorMessage(error as Error, telegram_id.toString(), is_ru);
+    errorMessageAdmin(error as Error);
     throw error;
   }
 };

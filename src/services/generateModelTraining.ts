@@ -1,11 +1,14 @@
 import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
-import { createModelTraining, updateModelTraining, supabase } from '@/core/supabase';
-import { processBalanceOperation, updateUserBalance } from '@/helpers/telegramStars/telegramStars';
-import { calculateTrainingCostInStars } from '@/helpers/telegramStars/telegramStars';
-import { getUserBalance } from '@/helpers/telegramStars/telegramStars';
+import { updateModelTraining, supabase, updateUserBalance } from '@/core/supabase';
+import { errorMessage } from '@/helpers';
+import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
+import { processBalanceOperation } from '@/price/helpers';
+import { calculateTrainingCostInStars } from '@/price/helpers';
+import { getUserBalance } from '@/core/supabase';
+import { createModelTraining } from '@/core/supabase/';
 
-interface ApiError extends Error {
+export interface ApiError extends Error {
   response?: {
     status: number;
   };
@@ -77,13 +80,15 @@ export async function generateModelTraining(
     // Создаем модель, если она не существует
     if (!modelExists) {
       try {
-        const model = await replicate.models.create(process.env.REPLICATE_USERNAME, modelName, {
+        await replicate.models.create(process.env.REPLICATE_USERNAME, modelName, {
           description: `LoRA model trained with trigger word: ${triggerWord}`,
           visibility: 'public',
           hardware: 'gpu-t4',
         });
       } catch (error) {
         console.error('Ошибка API при создании модели:', error.message);
+        errorMessage(error as Error, telegram_id, is_ru);
+        errorMessageAdmin(error as Error);
         throw error;
       }
     }
@@ -200,7 +205,13 @@ export async function generateModelTraining(
       triggerWord,
       trainingId: currentTraining?.id,
     });
-
+    bot.telegram.sendMessage(
+      telegram_id,
+      is_ru
+        ? `Произошла ошибка при генерации модели. Попробуйте еще раз.\n\nОшибка: ${error.message}`
+        : `An error occurred during model generation. Please try again.\n\nError: ${error.message}`,
+    );
+    errorMessageAdmin(error as Error);
     if ((error as ApiError).response?.status === 404) {
       throw new Error(`Ошибка при создании или доступе к модели. Проверьте REPLICATE_USERNAME (${process.env.REPLICATE_USERNAME}) и права доступа.`);
     }

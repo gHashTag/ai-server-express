@@ -1,16 +1,13 @@
 import { PaymentService } from '@/services/payment.service';
-import { incrementBalance } from '@/helpers/telegramStars/telegramStars';
-import { sendPaymentNotification } from '@/core/supabase/payments';
+import { incrementBalance } from '@/core/supabase';
+import { sendPaymentNotification } from '@/price/helpers';
 
-jest.mock('@/helpers/telegramStars/telegramStars', () => ({
-  incrementBalance: jest.fn(),
-}));
-
-jest.mock('@/core/supabase/payments', () => ({
+jest.mock('@/price/helpers', () => ({
   sendPaymentNotification: jest.fn(),
 }));
 
 jest.mock('@/core/supabase', () => ({
+  incrementBalance: jest.fn(),
   supabase: {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
