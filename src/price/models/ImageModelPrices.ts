@@ -6,25 +6,25 @@ interface ModelInfo {
   description_ru: string;
   costPerImage: number;
   previewImage: string;
-  inputType: ('text' | 'image')[];
+  inputType: ('text' | 'image' | 'dev')[];
 }
 
 // Стоимость одной звезды
 export const starCost = 0.016; // USD
 
-export const models: Record<string, ModelInfo> = {
+export const imageModelPrices: Record<string, ModelInfo> = {
   'black-forest-labs/flux-1.1-pro': {
     shortName: 'FLUX1.1 [pro]',
-    description_en: `FLUX1.1 [pro] generates images six times faster than its predecessor, with improved quality and diversity. It offers a balance between speed and image quality. Price: $0.04 per image.`,
-    description_ru: `FLUX1.1 [pro] генерирует изображения в шесть раз быстрее, чем его предшественник, с улучшенным качеством и разнообразием. Предлагает баланс между скоростью и качеством изображения. Цена: 0,04 долл. США за изображение.`,
+    description_en: `FLUX1.1 [pro] generates images six times faster than its predecessor, with improved quality and diversity. It offers a balance between speed and image quality.`,
+    description_ru: `FLUX1.1 [pro] генерирует изображения в шесть раз быстрее, чем его предшественник, с улучшенным качеством и разнообразием. Предлагает баланс между скоростью и качеством изображения.`,
     previewImage: 'https://replicate.delivery/czjl/XetPfMnnBtnyLUNiNcnl2Hneyeo8AsfsOl2AG5Znql5f3VK9E/tmpuv7lgrx7.jpg',
     costPerImage: calculateFinalImageCostInStars(0.04),
     inputType: ['text', 'image'],
   },
   'black-forest-labs/flux-1.1-pro-ultra': {
     shortName: 'FLUX1.1 [pro] Ultra',
-    description_en: `FLUX1.1 [pro] Ultra supports 4x higher resolutions (up to 4MP) with fast generation times of 10 seconds per image. It offers high resolution without speed compromise and includes a raw mode for more natural aesthetics. Price: $0.06 per image.`,
-    description_ru: `FLUX1.1 [pro] Ultra поддерживает разрешение в 4 раза выше (до 4 МП) с быстрым временем генерации 10 секунд на изображение. Высокое разрешение без потери скорости, режим raw для более естественной эстетики. Цена: 0,06 долл. США за изображение.`,
+    description_en: `FLUX1.1 [pro] Ultra supports 4x higher resolutions (up to 4MP) with fast generation times of 10 seconds per image. It offers high resolution without speed compromise and includes a raw mode for more natural aesthetics`,
+    description_ru: `FLUX1.1 [pro] Ultra поддерживает разрешение в 4 раза выше (до 4 МП) с быстрым временем генерации 10 секунд на изображение. Высокое разрешение без потери скорости, режим raw для более естественной эстетики`,
     previewImage: 'https://replicate.delivery/czjl/jqtNvxYHcnLELpszvkVf0APhMkBnwzrdo205RaVB7MttqU6JA/tmppokfymld.jpg',
     costPerImage: calculateFinalImageCostInStars(0.06),
     inputType: ['text', 'image'],
@@ -51,7 +51,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `FLUX.1 Depth [dev] приводит в действие глубинное руководство для открытого разработки. Подайте ему изображение и его карту глубины, и оно сохраняет правильное перспективное и масштабное соотношение, добавляя или изменяя элементы. Технология, которая используется в Depth [pro], оптимизирована для разработчиков, создающих пространственно-ориентированные творческие инструменты.`,
     previewImage: 'https://replicate.delivery/xezq/JnlhyMG4GD6uEpGsfoXVG7wc8pIvQ3UtfRRhyef2aXkQQfZeE/out-0.webp',
     costPerImage: calculateFinalImageCostInStars(0.025),
-    inputType: ['text', 'image'],
+    inputType: ['text', 'image', 'dev'],
   },
   'black-forest-labs/flux-depth-pro': {
     shortName: 'FLUX1.1 [pro] Depth',
@@ -59,7 +59,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `Эффективное руководство по глубине, которое сохраняет структуру и состав. Идеально подходит для ретекстурирования изображений или преобразования эскизов в детализированные произведения искусства.\nFLUX.1 Depth [pro] превосходит все модели в области глубинного руководства. Он использует карты глубины для точного контроля во время трансформаций изображений. Подайте ему изображение и его карту глубины, и он создаст изображения, следуя точному руководству по глубине, добавляя богатый детализированный стиль.\nОсобенно эффективно для: - Ретекстурирования при сохранении состава - Визуализации архитектуры - Контролируемого стиля - Восстановления 3D сцены`,
     previewImage: 'https://replicate.delivery/czjl/YmnJr3uJFwaLHpyE2YQZEsGD6DsN3h6opElksQJ4UUzUJz8E/tmp_zp5p3b2.jpg',
     costPerImage: calculateFinalImageCostInStars(0.05),
-    inputType: ['text', 'image'],
+    inputType: ['text', 'image', 'dev'],
   },
   'black-forest-labs/flux-dev': {
     shortName: 'FLUX1.1 [dev]',
@@ -83,7 +83,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `FLUX.1 Fill [dev] приносит профессиональное качество в маскировку в открытое развитие. Нарисуйте любой часть изображения, опишите, что вы хотите увидеть вместо нее, и получите естественные результаты, уважающие оригинальный контекст.\nЭто та же технология, которая используется в Fill [pro], оптимизированная для разработчиков, создающих творческие инструменты. Веса и код модели доступны на Hugging Face под лицензией Flux Dev.`,
     previewImage: 'https://replicate.delivery/xezq/XAOCdYKsGYZ9FNTeeEQPbl8DM9eoDf050jLfSAZMuWVYJdZeE/out-0.webp',
     costPerImage: calculateFinalImageCostInStars(0.04),
-    inputType: ['text', 'image'],
+    inputType: ['text', 'image', 'dev'],
   },
   'black-forest-labs/flux-fill-pro': {
     shortName: 'FLUX1.1 [pro] Fill',
@@ -91,7 +91,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `FLUX.1 Fill [pro] — это модель, основанная на гибридной архитектуре мультимодальных и параллельных блоков диффузионного трансформатора, оптимизированная для генерации изображений из текстовых описаний. Она предлагает улучшенную производительность и эффективность, включая вращательные позиционные вложения и параллельные слои внимания. FLUX.1 Fill [pro] доступна для использования в некоммерческих целях и поддерживает открытые веса для научных исследований и творческих проектов.`,
     previewImage: 'https://replicate.delivery/xezq/XAOCdYKsGYZ9FNTeeEQPbl8DM9eoDf050jLfSAZMuWVYJdZeE/out-0.webp',
     costPerImage: calculateFinalImageCostInStars(0.05),
-    inputType: ['text', 'image'],
+    inputType: ['text', 'image', 'dev'],
   },
   'black-forest-labs/flux-pro': {
     shortName: 'FLUX1.1 [pro]',
@@ -107,7 +107,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `FLUX.1 Redux [dev] помогает вам исследовать вариации существующих изображений. Подайте ему изображение и описание того, что вы хотите изменить, и он создает новые версии, сохраняя суть оригинала, в то время как включая ваши изменения. Идеально подходит для итерации над дизайнами или исследования творческих направлений.`,
     previewImage: 'https://replicate.delivery/xezq/Oaex1FdP2ayjUSrbBrYA1WXnGJlu2ESnk71anWxs4OGWEo5JA/out-0.webp',
     costPerImage: calculateFinalImageCostInStars(0.025),
-    inputType: ['image'],
+    inputType: ['image', 'dev'],
   },
   'black-forest-labs/flux-redux-schnell': {
     shortName: 'FLUX1.1 [dev] Redux schnell',
@@ -115,7 +115,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `FLUX.1 Redux [schnell] позволяет вам быстро создавать вариации ваших изображений. Он оптимизирован для скорости, делая его идеальным для прототипирования и творческого исследования. Хотя он торгует качеством ради скорости по сравнению с Redux [dev], он идеально подходит для быстрой итерации или создания реально-временных творческих инструментов.`,
     previewImage: 'https://replicate.delivery/xezq/EXqL6e5mFnSxcS5cebdKDEbKfAfArVBY0aJpf1V8iZoeHem5JA/out-0.webp',
     costPerImage: calculateFinalImageCostInStars(0.003),
-    inputType: ['image'],
+    inputType: ['image', 'dev'],
   },
   'black-forest-labs/flux-schnell': {
     shortName: 'FLUX1.1 [dev] Schnell',
@@ -123,7 +123,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `Schnell model`,
     previewImage: 'https://replicate.delivery/yhqm/hcDDSNf633zeDUz9sWkKfaftcfJLWIvuhn9vfCFWmufxelmemA/out-0.webp',
     costPerImage: calculateFinalImageCostInStars(0.003),
-    inputType: ['image'],
+    inputType: ['text'],
   },
   'black-forest-labs/flux-schnell-lora': {
     shortName: 'FLUX1.1 [dev] Schnell lora',
@@ -131,7 +131,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `FLUX.1 [schnell] — это 12 миллиард параметров, исправленный поток трансформатор, способный генерировать изображения из текстовых описаний.`,
     previewImage: 'https://replicate.delivery/xezq/T7gLEVc07aqvBdrWweJanOmMebAX97jUTfQrsLmXPQOvsahnA/out-0.webp',
     costPerImage: calculateFinalImageCostInStars(0.02),
-    inputType: ['image', 'image'],
+    inputType: ['text'],
   },
   'ideogram-ai/ideogram-v2': {
     shortName: 'Ideogram',
@@ -179,7 +179,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `Recraft 20b SVG — это доступная и быстрая модель для генерации векторных изображений. Она предназначена для эффективного создания высококачественной SVG-графики из текстовых данных, что делает её идеальной для личных и коммерческих проектов.`,
     previewImage: 'https://yuukfqcsdhkyxegfwlcb.supabase.co/storage/v1/object/public/images/bot/Screenshot%202568-01-08%20at%2015.23.03.png',
     costPerImage: calculateFinalImageCostInStars(0.044),
-    inputType: ['text'],
+    inputType: ['text', 'dev'],
   },
   'recraft-ai/recraft-v3': {
     shortName: 'Recraft V3',
@@ -195,7 +195,7 @@ export const models: Record<string, ModelInfo> = {
     description_ru: `Recraft V3 SVG — это передовая модель преобразования текста в изображение, создающая высококачественные SVG-изображения, включая логотипы и иконки. Она превосходит в понимании промптов, обеспечивая точные визуальные представления и бесшовную интеграцию текстовых и графических элементов. Модель поддерживает настройку стиля бренда и предлагает генерацию как растровых, так и векторных изображений.`,
     previewImage: 'https://yuukfqcsdhkyxegfwlcb.supabase.co/storage/v1/object/public/images/bot/Screenshot%202568-01-08%20at%2015.24.41.png',
     costPerImage: calculateFinalImageCostInStars(0.08),
-    inputType: ['text'],
+    inputType: ['text', 'dev'],
   },
   'stability-ai/stable-diffusion-3': {
     shortName: 'Stable Diffusion 3',
