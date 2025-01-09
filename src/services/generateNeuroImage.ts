@@ -109,13 +109,23 @@ export async function generateNeuroImage(
 
     return results[0] || null;
   } catch (error) {
-    bot.telegram.sendMessage(
-      telegram_id,
-      is_ru
-        ? `Произошла ошибка при генерации изображений. Попробуйте еще раз.\n\nОшибка: ${error.message}`
-        : `An error occurred during image generation. Please try again.\n\nError: ${error.message}`,
-    );
-    errorMessageAdmin(error as Error);
+    console.error(`Попытка не удалась для изображения ${i + 1}:`, error);
+
+    let errorMessageToUser = '❌ Произошла ошибка.';
+
+    if (error.message && error.message.includes('NSFW content detected')) {
+      errorMessageToUser = is_ru
+        ? '❌ Обнаружен NSFW контент. Пожалуйста, попробуйте другой запрос.'
+        : '❌ NSFW content detected. Please try another prompt.';
+    } else if (error.message) {
+      const match = error.message.match(/{"detail":"(.*?)"/);
+      if (match && match[1]) {
+        errorMessageToUser = is_ru ? `❌ Ошибка: ${match[1]}` : `❌ Error: ${match[1]}`;
+      }
+    } else {
+      errorMessageToUser = is_ru ? '❌ Произошла ошибка. Попробуйте еще раз.' : '❌ An error occurred. Please try again.';
+    }
+    await bot.telegram.sendMessage(telegram_id, errorMessageToUser);
     throw error;
   }
 }
