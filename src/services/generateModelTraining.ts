@@ -187,7 +187,7 @@ export async function generateModelTraining(
     }
 
     await updateModelTraining(telegram_id, modelName, {
-      status: 'completed',
+      status: 'succeeded',
       model_url: currentTraining.urls.get,
     });
 
