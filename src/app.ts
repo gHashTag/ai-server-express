@@ -16,6 +16,7 @@ import { GenerationController } from './controllers/generation.controller';
 import path from 'path';
 import fs from 'fs';
 import morgan from 'morgan';
+import { checkSecretKey } from './utils/checkSecretKey';
 // Создаем директорию, если она не существует
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -83,6 +84,7 @@ export class App {
   }
 
   private initializeMiddlewares() {
+    this.app.use(checkSecretKey);
     this.app.use((req, res, next) => {
       getDynamicLogger(LOG_FORMAT)(req, res, next);
     });

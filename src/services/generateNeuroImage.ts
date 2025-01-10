@@ -109,7 +109,7 @@ export async function generateNeuroImage(
 
     return results[0] || null;
   } catch (error) {
-    console.error(`Попытка не удалась для изображения ${i + 1}:`, error);
+    console.error(`Error:`, error);
 
     let errorMessageToUser = '❌ Произошла ошибка.';
 
@@ -126,6 +126,7 @@ export async function generateNeuroImage(
       errorMessageToUser = is_ru ? '❌ Произошла ошибка. Попробуйте еще раз.' : '❌ An error occurred. Please try again.';
     }
     await bot.telegram.sendMessage(telegram_id, errorMessageToUser);
+    errorMessageAdmin(error as Error);
     throw error;
   }
 }
