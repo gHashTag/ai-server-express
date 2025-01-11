@@ -4,6 +4,7 @@ import { saveFileLinkToSupabase } from '@/core/supabase/saveFileLinkToSupabase';
 export class UploadController {
   public async uploadFile(req: Request, res: Response): Promise<void> {
     try {
+      console.log('CASE: uploadController');
       const telegramId = req.body.telegram_id;
       console.log(telegramId);
       const type = req.body.type;

@@ -31,9 +31,16 @@ if (!process.env.SECRET_API_KEY) {
   throw new Error('SECRET_API_KEY is not set');
 }
 
+if (!process.env.SYNC_LABS_API_KEY) {
+  throw new Error('SYNC_LABS_API_KEY is not set');
+}
+
 export const BOT_TOKEN = isDev ? process.env.TELEGRAM_BOT_TOKEN_DEV : process.env.TELEGRAM_BOT_TOKEN_PROD;
 
 export const CREDENTIALS = process.env.CREDENTIALS === 'true';
+if (isDev && !process.env.NGROK_URL) {
+  throw new Error('NGROK_URL is not set');
+}
 export const {
   NODE_ENV,
   PORT,
@@ -45,4 +52,10 @@ export const {
   SUPABASE_URL,
   SUPABASE_SERVICE_KEY,
   SUPABASE_SERVICE_ROLE_KEY,
+  SYNC_LABS_API_KEY,
 } = process.env;
+
+export const API_URL = isDev ? process.env.NGROK_URL : ORIGIN;
+
+export const WEBHOOK_URL = `${API_URL}/webhooks/synclabs-video`;
+console.log(WEBHOOK_URL, 'webhookUrl');

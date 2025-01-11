@@ -39,3 +39,5 @@ export * from './updateUserSoul';
 export * from './getUserByTelegramId';
 export * from './incrementBalance';
 export * from './saveFileLinkToSupabase';
+export * from './setSyncLabsVideo';
+export * from './updateResult';

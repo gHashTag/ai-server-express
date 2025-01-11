@@ -10,6 +10,10 @@ import { generateNeuroImage } from '@/services/generateNeuroImage';
 import { createVoiceAvatar } from '@/services/createVoiceAvatar';
 import { generateModelTraining } from '@/services/generateModelTraining';
 import { validateUserParams } from '@/middlewares/validateUserParams';
+import { generateLipSync } from '@/services/generateLipSync';
+import { API_URL } from '@/config';
+import { deleteFile } from '@/helpers';
+import path from 'path';
 
 export class GenerationController {
   public textToImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -224,6 +228,50 @@ export class GenerationController {
       await generateModelTraining(zipUrl, triggerWord, modelName, steps, telegram_id, is_ru);
 
       res.status(200).json({ message: 'Model training started' });
+    } catch (error) {
+      console.error('Ошибка при обработке запроса:', error);
+      next(error);
+    }
+  };
+
+  public createLipSync = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    console.log('CASE: createLipSync');
+    try {
+      const { type, telegram_id, is_ru } = req.body;
+      console.log(req.body, 'req.body');
+      console.log(type, telegram_id, is_ru, 'type, telegram_id, is_ru');
+      console.log(req.files, 'req.files');
+
+      // Поскольку req.files является массивом, используем find для поиска нужных файлов
+      const videoFile = req.files?.find(file => file.fieldname === 'video');
+      console.log(videoFile, 'videoFile');
+      const audioFile = req.files?.find(file => file.fieldname === 'audio');
+      console.log(audioFile, 'audioFile');
+
+      if (!videoFile) {
+        res.status(400).json({ message: 'videoFile is required' });
+        return;
+      }
+
+      if (!audioFile) {
+        res.status(400).json({ message: 'audioFile is required' });
+        return;
+      }
+
+      const video = `${API_URL}/uploads/${req.body.telegram_id}/lip-sync/${videoFile.filename}`;
+      console.log(video, 'video');
+      const audio = `${API_URL}/uploads/${req.body.telegram_id}/lip-sync/${audioFile.filename}`;
+      console.log(audio, 'audio');
+
+      const lipSyncResponse = await generateLipSync(req.body.telegram_id, video, audio, is_ru);
+
+      const videoLocalPath = path.join(__dirname, '../uploads', req.body.telegram_id, 'lip-sync', videoFile.filename);
+      const audioLocalPath = path.join(__dirname, '../uploads', req.body.telegram_id, 'lip-sync', audioFile.filename);
+
+      await deleteFile(videoLocalPath);
+      await deleteFile(audioLocalPath);
+
+      res.status(200).json(lipSyncResponse);
     } catch (error) {
       console.error('Ошибка при обработке запроса:', error);
       next(error);

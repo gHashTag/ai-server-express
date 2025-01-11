@@ -5,3 +5,4 @@ export * from './fetchImage';
 export * from './downloadFile';
 export * from './processApiResponse';
 export * from './retry';
+export * from './deleteFile';

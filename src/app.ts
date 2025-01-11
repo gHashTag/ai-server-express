@@ -14,7 +14,7 @@ import { Server } from 'http';
 import path from 'path';
 import morgan from 'morgan';
 import { checkSecretKey } from './utils/checkSecretKey';
-import { upload } from './routes/upload.route';
+import { fileUpload } from './utils/fileUpload';
 
 export class App {
   public app: Application;
@@ -73,7 +73,7 @@ export class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());
-    this.app.use(upload.any());
+    this.app.use(fileUpload.any());
     this.app.use(morgan('combined'));
     this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
   }
