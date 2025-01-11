@@ -38,3 +38,4 @@ export * from './updateModelTraining';
 export * from './updateUserSoul';
 export * from './getUserByTelegramId';
 export * from './incrementBalance';
+export * from './saveFileLinkToSupabase';

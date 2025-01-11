@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import express, { Application } from 'express';
-import multer from 'multer';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -12,41 +11,16 @@ import { NODE_ENV, PORT, LOG_FORMAT, ORIGIN, CREDENTIALS } from '@config';
 import { Routes } from '@interfaces/routes.interface';
 import { getDynamicLogger, logger } from '@utils/logger';
 import { Server } from 'http';
-import { GenerationController } from './controllers/generation.controller';
 import path from 'path';
-import fs from 'fs';
 import morgan from 'morgan';
 import { checkSecretKey } from './utils/checkSecretKey';
-// Создаем директорию, если она не существует
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-// Настройка хранилища для multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir); // Укажите директорию для сохранения файлов
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); // Используйте уникальное имя файла
-  },
-});
-
-const upload = multer({ storage: storage });
-
-declare module 'express' {
-  interface Request {
-    files?: Express.Multer.File[];
-  }
-}
+import { upload } from './routes/upload.route';
 
 export class App {
   public app: Application;
   public env: string;
   public port: string | number;
   private server: Server;
-  private generationController: GenerationController;
 
   constructor(routes: Routes[]) {
     this.app = express();
@@ -55,11 +29,8 @@ export class App {
 
     this.initializeMiddlewares();
     this.initializeRoutes(routes);
-
     this.initializeSwagger();
     this.initializeErrorHandling();
-
-    this.generationController = new GenerationController();
   }
 
   public listen() {
@@ -104,7 +75,7 @@ export class App {
     routes.forEach(route => {
       this.app.use('/', route.router);
     });
-    // Базовый роут - исправляем
+
     this.app.get('/', (_req, res) => {
       try {
         res.status(200).json({
@@ -125,7 +96,6 @@ export class App {
       }
     });
 
-    // Остальные роуты работают нормально
     this.app.get('/health', (_req, res) => {
       res.json({
         status: 'OK',
@@ -157,7 +127,6 @@ export class App {
   }
 
   private initializeErrorHandling() {
-    // Обработка 404
     this.app.use((_req, res) => {
       res.status(404).json({
         status: 'error',
@@ -165,7 +134,6 @@ export class App {
       });
     });
 
-    // Обработка ошибок - убираем неиспользуемый параметр _next
     this.app.use((err: Error, _req: express.Request, res: express.Response) => {
       logger.error('Error:', err);
       res.status(500).json({
