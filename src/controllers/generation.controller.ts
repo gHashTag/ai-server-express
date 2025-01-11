@@ -188,8 +188,11 @@ export class GenerationController {
 
   public createModelTraining = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { triggerWord, modelName, steps, telegram_id, is_ru } = req.body;
-
+      const { type, telegram_id, triggerWord, modelName, steps, is_ru } = req.body;
+      if (!type) {
+        res.status(400).json({ message: 'type is required' });
+        return;
+      }
       if (!triggerWord) {
         res.status(400).json({ message: 'triggerWord is required' });
         return;
@@ -216,7 +219,7 @@ export class GenerationController {
         return;
       }
       // Создаем URL для доступа к файлу
-      const zipUrl = `https://${req.headers.host}/uploads/${zipFile.filename}`;
+      const zipUrl = `https://${req.headers.host}/uploads/${telegram_id}/${type}/${zipFile.filename}`;
 
       await generateModelTraining(zipUrl, triggerWord, modelName, steps, telegram_id, is_ru);
 
