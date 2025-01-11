@@ -59,7 +59,14 @@ export class App {
     this.app.use((req, res, next) => {
       getDynamicLogger(LOG_FORMAT)(req, res, next);
     });
-    this.app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
+    this.app.use(
+      cors({
+        origin: 'https://replicate.com',
+        credentials: CREDENTIALS,
+        methods: ['GET'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+      }),
+    );
     this.app.use(hpp());
     this.app.use(helmet());
     this.app.use(compression());
