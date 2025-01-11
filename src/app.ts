@@ -55,13 +55,13 @@ export class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(checkSecretKey);
+    // this.app.use(checkSecretKey);
     this.app.use((req, res, next) => {
       getDynamicLogger(LOG_FORMAT)(req, res, next);
     });
     this.app.use(
       cors({
-        origin: 'https://replicate.com',
+        origin: ORIGIN,
         credentials: CREDENTIALS,
         methods: ['GET'],
         allowedHeaders: ['Content-Type', 'Authorization'],
