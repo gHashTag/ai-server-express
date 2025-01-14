@@ -100,7 +100,8 @@ export const generateImageToVideo = async (
     // console.log(videoUrl, 'videoUrl');
 
     if (videoUrl) {
-      const videoLocalPath = path.join(__dirname, '../uploads', telegram_id.toString(), 'video', `${new Date().toISOString()}.mp4`);
+      const videoLocalPath = `${API_URL}/uploads/${telegram_id}/video/${new Date().toISOString()}.mp4`;
+      console.log(videoLocalPath, 'videoLocalPath');
       await mkdir(path.dirname(videoLocalPath), { recursive: true });
 
       const videoBuffer = await downloadFile(videoUrl as string);
@@ -127,8 +128,7 @@ export const generateImageToVideo = async (
           },
         },
       );
-
-      await pulse(videoLocalPath, prompt, 'image-to-video', telegram_id, username, is_ru);
+      await bot.telegram.sendVideo('@neuro_blogger_pulse', video as InputFile);
     }
 
     return { videoUrl: videoUrl as string };
