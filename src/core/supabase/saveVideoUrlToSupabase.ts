@@ -1,11 +1,12 @@
 import { supabase } from '@/core/supabase';
 
-export async function saveVideoUrlToSupabase(telegramId: number, videoPath: string) {
+export async function saveVideoUrlToSupabase(telegramId: number, videoUrl: string, videoPath: string) {
   const { error } = await supabase.from('assets').insert({
     type: 'video',
     trigger_word: 'video',
-    project_id: telegramId,
-    public_url: videoPath,
+    telegram_id: telegramId.toString(),
+    storage_path: videoPath,
+    public_url: videoUrl,
     text: 'Generated video',
   });
 

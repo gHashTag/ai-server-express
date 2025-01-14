@@ -96,34 +96,20 @@ export const generateImageToVideo = async (
     }
     console.log(result, 'result');
     const videoUrl = result?.output ? result.output : result;
-    console.log(videoUrl, 'videoUrl');
-
-    const { error } = await supabase.from('assets').insert({
-      type: 'video',
-      trigger_word: 'video',
-      project_id: telegram_id,
-      storage_path: `videos/${videoModel}/${new Date().toISOString()}`,
-      public_url: videoUrl,
-      text: prompt,
-    });
-
-    if (error) {
-      console.error('Supabase error:', error);
-    }
+    // const videoUrl = 'https://replicate.delivery/czjl/jicf4ChG3hX3JKDF0OtGXb26utKkYutrNkYdMW5lVxO8kiCKA/tmplcjb5712.mp4';
+    // console.log(videoUrl, 'videoUrl');
 
     if (videoUrl) {
-      const videoBuffer = await downloadFile(videoUrl as string);
-      const videoPath = `${API_URL}/uploads/${telegram_id}/video/${new Date().toISOString()}.mp4`;
-      await writeFile(videoPath, videoBuffer);
-      console.log(videoPath, 'videoPath');
-      // Запись видео на диск
       const videoLocalPath = path.join(__dirname, '../uploads', telegram_id.toString(), 'video', `${new Date().toISOString()}.mp4`);
       await mkdir(path.dirname(videoLocalPath), { recursive: true });
-      await writeFile(videoLocalPath, videoBuffer);
-      await saveVideoUrlToSupabase(telegram_id, videoLocalPath);
 
-      const video = { source: videoPath };
-      console.log(video, 'video');
+      const videoBuffer = await downloadFile(videoUrl as string);
+      await writeFile(videoLocalPath, videoBuffer);
+
+      await saveVideoUrlToSupabase(telegram_id, videoUrl as string, videoLocalPath);
+
+      const video = { source: videoLocalPath };
+
       await bot.telegram.sendVideo(telegram_id, video as InputFile);
       await bot.telegram.sendMessage(
         telegram_id,
@@ -141,8 +127,8 @@ export const generateImageToVideo = async (
           },
         },
       );
-      await sendBalanceMessage(telegram_id, balanceCheck.newBalance, imageToVideoGenerationCost, is_ru);
-      await pulse(videoPath, prompt, 'image-to-video', telegram_id, username, is_ru);
+
+      await pulse(videoLocalPath, prompt, 'image-to-video', telegram_id, username, is_ru);
     }
 
     return { videoUrl: videoUrl as string };
