@@ -232,7 +232,7 @@ export async function createVoiceSyncLabs({ fileUrl, username }: { fileUrl: stri
     name: username,
     description: `Voice created from Telegram voice message`,
     inputSamples: [fileUrl],
-    webhookUrl: `${process.env.SUPABASE_URL}/functions/v1/synclabs-video`,
+    webhookUrl: `${process.env.SUPABASE_URL}/synclabs-video`,
   });
 
   try {

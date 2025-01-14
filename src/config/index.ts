@@ -58,4 +58,3 @@ export const {
 export const API_URL = isDev ? process.env.NGROK_URL : ORIGIN;
 
 export const WEBHOOK_URL = `${API_URL}/webhooks/synclabs-video`;
-console.log(WEBHOOK_URL, 'webhookUrl');

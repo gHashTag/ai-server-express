@@ -1,6 +1,8 @@
+import { API_URL } from '@/config';
 import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
 import { supabase } from '@/core/supabase';
+import { saveVideoUrlToSupabase } from '@/core/supabase/saveVideoUrlToSupabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
 import { pulse } from '@/helpers/pulse';
@@ -24,16 +26,15 @@ export const generateImageToVideo = async (
   telegram_id: number,
   username: string,
   is_ru: boolean,
-): Promise<{ videoUrl?: string; prediction_id?: string }> => {
+): Promise<{ videoUrl?: string; prediction_id?: string } | string> => {
   try {
+    console.log('Start generateImageToVideo', { imageUrl, prompt, videoModel, paymentAmount, telegram_id, username, is_ru });
     if (!imageUrl) throw new Error('Image is required');
     if (!prompt) throw new Error('Prompt is required');
     if (!videoModel) throw new Error('Video model is required');
     if (!telegram_id) throw new Error('Telegram ID is required');
     if (!username) throw new Error('Username is required');
     if (!is_ru) throw new Error('Is RU is required');
-
-    console.log('Start generateImageToVideo', { imageUrl, prompt, videoModel, paymentAmount, telegram_id, username, is_ru });
 
     const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount, is_ru });
 
@@ -49,7 +50,7 @@ export const generateImageToVideo = async (
       return result;
     };
 
-    let result: ReplicateResponse;
+    let result: ReplicateResponse | string;
 
     switch (videoModel) {
       case 'minimax':
@@ -92,8 +93,9 @@ export const generateImageToVideo = async (
       default:
         throw new Error('Unsupported service');
     }
-
-    const videoUrl = result.output;
+    console.log(result, 'result');
+    const videoUrl = result?.output ? result.output : result;
+    console.log(videoUrl, 'videoUrl');
 
     const { error } = await supabase.from('assets').insert({
       type: 'video',
@@ -109,10 +111,18 @@ export const generateImageToVideo = async (
     }
 
     if (videoUrl) {
-      const videoBuffer = await downloadFile(videoUrl);
-      const videoPath = `temp_${Date.now()}.mp4`;
+      const videoBuffer = await downloadFile(videoUrl as string);
+      const videoPath = `${API_URL}/uploads/${telegram_id}/video/${new Date().toISOString()}.mp4`;
       await writeFile(videoPath, videoBuffer);
+      console.log(videoPath, 'videoPath');
+      // Запись видео на диск
+      await writeFile(videoPath, videoBuffer);
+      await saveVideoUrlToSupabase(telegram_id, videoPath);
+
+      // Логирование пути к видео
+      console.log(videoPath, 'videoPath');
       const video = { source: videoPath };
+      console.log(video, 'video');
       await bot.telegram.sendVideo(telegram_id, video as InputFile);
       await bot.telegram.sendMessage(
         telegram_id,
