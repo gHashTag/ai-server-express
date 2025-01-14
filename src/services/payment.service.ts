@@ -4,8 +4,10 @@ import { sendPaymentNotification } from '@/price/helpers';
 import { supabase } from '@/core/supabase';
 import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
 import { errorMessage } from '@/helpers';
+import { setPayments } from '@/core/supabase/ setPayments';
 
 type User = {
+  user_id: string;
   telegram_id: string;
   username: string;
   balance: number;
@@ -29,9 +31,17 @@ export class PaymentService {
       }
 
       if (stars > 0) {
-        const { telegram_id, username, language } = await this.getTelegramIdFromInvId(Email);
+        const { user_id, telegram_id, username, language } = await this.getTelegramIdFromInvId(Email);
         await incrementBalance({ telegram_id: telegram_id.toString(), amount: stars });
         await sendPaymentNotification(Number(OutSum), stars, telegram_id, language, username);
+        await setPayments({
+          user_id,
+          OutSum,
+          currency: 'RUB',
+          stars,
+          email: Email,
+          payment_method: 'Robokassa',
+        });
       }
     } catch (error) {
       const { telegram_id, language } = await this.getTelegramIdFromInvId(Email);
@@ -43,7 +53,7 @@ export class PaymentService {
 
   private async getTelegramIdFromInvId(Email: string): Promise<User> {
     try {
-      const { data } = await supabase.from('users').select('telegram_id, username, balance, language').eq('email', Email).single();
+      const { data } = await supabase.from('users').select('user_id, telegram_id, username, balance, language').eq('email', Email).single();
       if (!data) {
         throw new Error('User not found');
       }
