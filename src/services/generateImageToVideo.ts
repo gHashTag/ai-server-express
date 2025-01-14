@@ -107,7 +107,7 @@ export const generateImageToVideo = async (
       const videoBuffer = await downloadFile(videoUrl as string);
       await writeFile(videoLocalPath, videoBuffer);
 
-      await saveVideoUrlToSupabase(telegram_id, videoUrl as string, videoLocalPath);
+      await saveVideoUrlToSupabase(telegram_id, videoUrl as string, videoLocalPath, videoModel);
 
       const video = { source: videoLocalPath };
 
