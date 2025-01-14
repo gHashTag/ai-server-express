@@ -1,10 +1,9 @@
-import { incrementBalance } from '@/core/supabase';
+import { incrementBalance, setPayments } from '@/core/supabase';
 import { sendPaymentNotification } from '@/price/helpers';
 
 import { supabase } from '@/core/supabase';
 import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
 import { errorMessage } from '@/helpers';
-import { setPayments } from '@/core/supabase/ setPayments';
 
 type User = {
   user_id: string;
@@ -37,8 +36,8 @@ export class PaymentService {
         await setPayments({
           user_id,
           OutSum,
-          currency: 'RUB',
           stars,
+          currency: 'RUB',
           email: Email,
           payment_method: 'Robokassa',
         });

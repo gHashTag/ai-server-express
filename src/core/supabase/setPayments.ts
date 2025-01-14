@@ -3,7 +3,7 @@ import { supabase } from '.';
 type Payment = {
   user_id: string;
   OutSum: string;
-  currency: 'RUB' | 'USD' | 'EUR';
+  currency: 'RUB' | 'USD' | 'EUR' | 'STARS';
   stars: number;
   email: string;
   payment_method: 'Robokassa' | 'YooMoney' | 'Telegram' | 'Stripe' | 'Other';

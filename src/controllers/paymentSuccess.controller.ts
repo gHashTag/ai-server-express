@@ -6,8 +6,9 @@ export class PaymentSuccessController {
 
   public paymentSuccess = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { OutSum, Email } = req.query;
-      console.log(OutSum, Email);
+      const { OutSum, InvId, Email, shp_interface, SignatureValue, Culture } = req.query;
+      console.log(req.query);
+      console.log(OutSum, InvId, Email, shp_interface, SignatureValue, Culture);
 
       await this.paymentService.processPayment(OutSum as string, Email as string);
 

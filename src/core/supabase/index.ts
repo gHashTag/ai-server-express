@@ -41,3 +41,4 @@ export * from './incrementBalance';
 export * from './saveFileLinkToSupabase';
 export * from './setSyncLabsVideo';
 export * from './updateResult';
+export * from './setPayments';
