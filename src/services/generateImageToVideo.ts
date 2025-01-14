@@ -1,12 +1,12 @@
 import { API_URL } from '@/config';
 import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
-import { supabase } from '@/core/supabase';
+
 import { saveVideoUrlToSupabase } from '@/core/supabase/saveVideoUrlToSupabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
-import { pulse } from '@/helpers/pulse';
-import { processBalanceOperation, imageToVideoGenerationCost, sendBalanceMessage } from '@/price/helpers';
+
+import { processBalanceOperation, imageToVideoGenerationCost } from '@/price/helpers';
 
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
@@ -81,7 +81,7 @@ export const generateImageToVideo = async (
         });
         break;
 
-      case 'i2vgen':
+      case 'i2vgen-xl':
         result = await runModel('ali-vilab/i2vgen-xl:5821a338d00033abaaba89080a17eb8783d9a17ed710a6b4246a18e0900ccad4' as shortModelUrl, {
           image: imageUrl,
           prompt,
@@ -128,7 +128,11 @@ export const generateImageToVideo = async (
           },
         },
       );
-      await bot.telegram.sendVideo('@neuro_blogger_pulse', video as InputFile);
+      await bot.telegram.sendVideo('@neuro_blogger_pulse', video as InputFile, {
+        caption: is_ru
+          ? `${username} Telegram ID: ${telegram_id} сгенерировал видео с промптом: ${prompt} \n\n Команда: ${videoModel}`
+          : `${username} Telegram ID: ${telegram_id} generated a video with a prompt: ${prompt} \n\n Command: ${videoModel}`,
+      });
     }
 
     return { videoUrl: videoUrl as string };
