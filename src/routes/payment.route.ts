@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { PaymentSuccessController } from '@controllers/paymentSuccess.controller';
 
 export class PaymentRoute {
-  public path = '/payment';
-  public router: Router = Router(); // Явно указываем тип Router
+  public path = '/payment-success';
+  public router: Router = Router();
   public paymentSuccessController = new PaymentSuccessController();
 
   constructor() {
@@ -11,6 +11,6 @@ export class PaymentRoute {
   }
 
   private initializeRoutes() {
-    this.router.get(`${this.path}/success`, this.paymentSuccessController.paymentSuccess);
+    this.router.get(this.path, this.paymentSuccessController.paymentSuccess);
   }
 }
