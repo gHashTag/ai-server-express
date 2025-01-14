@@ -8,7 +8,8 @@ import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
 import { pulse } from '@/helpers/pulse';
 import { processBalanceOperation, imageToVideoGenerationCost, sendBalanceMessage } from '@/price/helpers';
 
-import { writeFile } from 'fs/promises';
+import { mkdir, writeFile } from 'fs/promises';
+import path from 'path';
 import { InputFile } from 'telegraf/typings/core/types/typegram';
 
 interface ReplicateResponse {
@@ -116,11 +117,11 @@ export const generateImageToVideo = async (
       await writeFile(videoPath, videoBuffer);
       console.log(videoPath, 'videoPath');
       // Запись видео на диск
-      await writeFile(videoPath, videoBuffer);
-      await saveVideoUrlToSupabase(telegram_id, videoPath);
+      const videoLocalPath = path.join(__dirname, '../uploads', telegram_id.toString(), 'video', `${new Date().toISOString()}.mp4`);
+      await mkdir(path.dirname(videoLocalPath), { recursive: true });
+      await writeFile(videoLocalPath, videoBuffer);
+      await saveVideoUrlToSupabase(telegram_id, videoLocalPath);
 
-      // Логирование пути к видео
-      console.log(videoPath, 'videoPath');
       const video = { source: videoPath };
       console.log(video, 'video');
       await bot.telegram.sendVideo(telegram_id, video as InputFile);
@@ -144,7 +145,7 @@ export const generateImageToVideo = async (
       await pulse(videoPath, prompt, 'image-to-video', telegram_id, username, is_ru);
     }
 
-    return { videoUrl };
+    return { videoUrl: videoUrl as string };
   } catch (error) {
     console.error('Error in generateImageToVideo:', error);
     bot.telegram.sendMessage(
