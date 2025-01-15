@@ -1,6 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { InputFile } from 'telegraf/typings/core/types/typegram';
-import bot from '@/core/bot';
 import { generateTextToImage } from '@/services/generateTextToImage';
 import { generateSpeech } from '@/services/generateSpeech';
 import { generateTextToVideo } from '@/services/generateTextToVideo';

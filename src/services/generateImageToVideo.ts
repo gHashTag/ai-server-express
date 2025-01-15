@@ -98,7 +98,7 @@ export const generateImageToVideo = async (
     // const videoUrl = 'https://yuukfqcsdhkyxegfwlcb.supabase.co/storage/v1/object/public/dev/2025-01-15T06%2011%2018.236Z.mp4';
 
     if (videoUrl) {
-      const videoLocalPath = path.join(__dirname, '../uploads', telegram_id.toString(), 'video', `${new Date().toISOString()}.mp4`);
+      const videoLocalPath = path.join(__dirname, '../uploads', telegram_id.toString(), 'image-to-video', `${new Date().toISOString()}.mp4`);
       console.log(videoLocalPath, 'videoLocalPath');
       await mkdir(path.dirname(videoLocalPath), { recursive: true });
 
