@@ -3,18 +3,12 @@ import { getUserBalance, updateUserBalance } from '@/core/supabase';
 import { BalanceOperationResult } from '@/interfaces/payments.interface';
 
 type BalanceOperationProps = {
-  model?: string;
   telegram_id: number;
   paymentAmount: number;
   is_ru: boolean;
 };
 
-export const processBalanceOperation = async ({
-  model,
-  telegram_id,
-  paymentAmount,
-  is_ru,
-}: BalanceOperationProps): Promise<BalanceOperationResult> => {
+export const processBalanceOperation = async ({ telegram_id, paymentAmount, is_ru }: BalanceOperationProps): Promise<BalanceOperationResult> => {
   try {
     // Получаем текущий баланс
     const currentBalance = await getUserBalance(telegram_id);

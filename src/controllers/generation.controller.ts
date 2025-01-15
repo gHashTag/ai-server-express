@@ -139,7 +139,7 @@ export class GenerationController {
 
   public imageToVideo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { imageUrl, prompt, videoModel, paymentAmount, telegram_id, username, is_ru } = req.body;
+      const { imageUrl, prompt, videoModel, telegram_id, username, is_ru } = req.body;
       if (!imageUrl) {
         res.status(400).json({ message: 'Image is required' });
         return;
@@ -152,22 +152,11 @@ export class GenerationController {
         res.status(400).json({ message: 'Model is required' });
         return;
       }
-      if (!paymentAmount) {
-        res.status(400).json({ message: 'Payment amount is required' });
-        return;
-      }
 
       validateUserParams(req);
       res.status(200).json({ message: 'Processing started' });
 
-      generateImageToVideo(imageUrl, prompt, videoModel, paymentAmount, telegram_id, username, is_ru)
-        .then(async ({ videoUrl }) => {
-          const video = { source: videoUrl };
-          await bot.telegram.sendVideo(telegram_id, video as InputFile);
-        })
-        .catch(error => {
-          console.error('Ошибка при генерации видео:', error);
-        });
+      generateImageToVideo(imageUrl, prompt, videoModel, telegram_id, username, is_ru);
     } catch (error) {
       next(error);
     }

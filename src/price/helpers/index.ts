@@ -20,3 +20,5 @@ export * from './textToVideoCost';
 export * from './voiceConversationCost';
 export * from './sendBalanceMessage';
 export * from './calculateFinalImageCostInStars';
+
+export * from './processBalanceVideoOperation';

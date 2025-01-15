@@ -1,5 +1,6 @@
 export interface BalanceOperationResult {
   newBalance: number;
+  paymentAmount: number;
   success: boolean;
   error?: string;
 }

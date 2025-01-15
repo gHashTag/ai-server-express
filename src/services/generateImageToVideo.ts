@@ -1,4 +1,3 @@
-import { API_URL } from '@/config';
 import bot from '@/core/bot';
 import { replicate } from '@/core/replicate';
 
@@ -6,7 +5,7 @@ import { saveVideoUrlToSupabase } from '@/core/supabase/saveVideoUrlToSupabase';
 import { downloadFile } from '@/helpers/downloadFile';
 import { errorMessageAdmin } from '@/helpers/errorMessageAdmin';
 
-import { processBalanceOperation, imageToVideoGenerationCost } from '@/price/helpers';
+import { imageToVideoGenerationCost, processBalanceVideoOperation } from '@/price/helpers';
 
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
@@ -23,13 +22,12 @@ export const generateImageToVideo = async (
   imageUrl: string,
   prompt: string,
   videoModel: string,
-  paymentAmount: number,
   telegram_id: number,
   username: string,
   is_ru: boolean,
 ): Promise<{ videoUrl?: string; prediction_id?: string } | string> => {
   try {
-    console.log('Start generateImageToVideo', { imageUrl, prompt, videoModel, paymentAmount, telegram_id, username, is_ru });
+    console.log('Start generateImageToVideo', { imageUrl, prompt, videoModel, telegram_id, username, is_ru });
     if (!imageUrl) throw new Error('Image is required');
     if (!prompt) throw new Error('Prompt is required');
     if (!videoModel) throw new Error('Video model is required');
@@ -37,10 +35,10 @@ export const generateImageToVideo = async (
     if (!username) throw new Error('Username is required');
     if (!is_ru) throw new Error('Is RU is required');
 
-    const balanceCheck = await processBalanceOperation({ telegram_id, paymentAmount, is_ru });
+    const { newBalance, paymentAmount, success, error } = await processBalanceVideoOperation({ videoModel, telegram_id, is_ru });
 
-    if (!balanceCheck.success) {
-      throw new Error(balanceCheck.error);
+    if (!success) {
+      throw new Error(error);
     }
 
     bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
@@ -96,8 +94,8 @@ export const generateImageToVideo = async (
     }
     console.log(result, 'result');
     const videoUrl = result?.output ? result.output : result;
-    // const videoUrl = 'https://replicate.delivery/czjl/jicf4ChG3hX3JKDF0OtGXb26utKkYutrNkYdMW5lVxO8kiCKA/tmplcjb5712.mp4';
-    // console.log(videoUrl, 'videoUrl');
+
+    // const videoUrl = 'https://yuukfqcsdhkyxegfwlcb.supabase.co/storage/v1/object/public/dev/2025-01-15T06%2011%2018.236Z.mp4';
 
     if (videoUrl) {
       const videoLocalPath = path.join(__dirname, '../uploads', telegram_id.toString(), 'video', `${new Date().toISOString()}.mp4`);
@@ -115,12 +113,12 @@ export const generateImageToVideo = async (
       await bot.telegram.sendMessage(
         telegram_id,
         is_ru
-          ? `Ваше видео сгенерировано!\n\nСгенерировать еще?\n\nСтоимость: ${imageToVideoGenerationCost.toFixed(
+          ? `Ваше видео сгенерировано!\n\nСгенерировать еще?\n\nСтоимость: ${paymentAmount.toFixed(2)} ⭐️\nВаш новый баланс: ${newBalance.toFixed(
               2,
-            )} ⭐️\nВаш новый баланс: ${balanceCheck.newBalance.toFixed(2)} ⭐️`
-          : `Your video has been generated!\n\nGenerate more?\n\nCost: ${imageToVideoGenerationCost.toFixed(
+            )} ⭐️`
+          : `Your video has been generated!\n\nGenerate more?\n\nCost: ${paymentAmount.toFixed(2)} ⭐️\nYour new balance: ${newBalance.toFixed(
               2,
-            )} ⭐️\nYour new balance: ${balanceCheck.newBalance.toFixed(2)} ⭐️`,
+            )} ⭐️`,
         {
           reply_markup: {
             keyboard: [[{ text: is_ru ? '🎥 Сгенерировать новое видео?' : '🎥 Generate new video?' }]],
@@ -133,6 +131,8 @@ export const generateImageToVideo = async (
           ? `${username} Telegram ID: ${telegram_id} сгенерировал видео с промптом: ${prompt} \n\n Команда: ${videoModel}`
           : `${username} Telegram ID: ${telegram_id} generated a video with a prompt: ${prompt} \n\n Command: ${videoModel}`,
       });
+    } else {
+      throw new Error('Video URL is required');
     }
 
     return { videoUrl: videoUrl as string };
