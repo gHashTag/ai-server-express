@@ -122,7 +122,6 @@ export const generateImageToVideo = async (
         {
           reply_markup: {
             keyboard: [[{ text: is_ru ? '🎥 Сгенерировать новое видео?' : '🎥 Generate new video?' }]],
-            resize_keyboard: false,
           },
         },
       );
