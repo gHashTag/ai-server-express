@@ -5,7 +5,7 @@ type Payment = {
   OutSum: string;
   currency: 'RUB' | 'USD' | 'EUR' | 'STARS';
   stars: number;
-  email: string;
+  email?: string;
   payment_method: 'Robokassa' | 'YooMoney' | 'Telegram' | 'Stripe' | 'Other';
 };
 

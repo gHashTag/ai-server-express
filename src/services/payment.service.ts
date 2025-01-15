@@ -14,10 +14,10 @@ type User = {
 };
 
 export class PaymentService {
-  public async processPayment(OutSum: string, Email: string): Promise<void> {
+  public async processPayment(OutSum: string, inv_id: string): Promise<void> {
     try {
       console.log('PaymentService: OutSum', OutSum);
-      console.log('PaymentService: Email', Email);
+      console.log('PaymentService: Email', inv_id);
       let stars = 0;
       if (OutSum === '1999') {
         stars = 1249;
@@ -30,7 +30,7 @@ export class PaymentService {
       }
 
       if (stars > 0) {
-        const { user_id, telegram_id, username, language } = await this.getTelegramIdFromInvId(Email);
+        const { user_id, telegram_id, username, language } = await this.getTelegramIdFromInvId(inv_id);
         await incrementBalance({ telegram_id: telegram_id.toString(), amount: stars });
         await sendPaymentNotification(Number(OutSum), stars, telegram_id, language, username);
         await setPayments({
@@ -38,21 +38,20 @@ export class PaymentService {
           OutSum,
           stars,
           currency: 'RUB',
-          email: Email,
           payment_method: 'Robokassa',
         });
       }
     } catch (error) {
-      const { telegram_id, language } = await this.getTelegramIdFromInvId(Email);
+      const { telegram_id, language } = await this.getTelegramIdFromInvId(inv_id);
       errorMessage(error as Error, telegram_id, language === 'ru');
       errorMessageAdmin(error as Error);
       throw error;
     }
   }
 
-  private async getTelegramIdFromInvId(Email: string): Promise<User> {
+  private async getTelegramIdFromInvId(inv_id: string): Promise<User> {
     try {
-      const { data } = await supabase.from('users').select('user_id, telegram_id, username, balance, language').eq('email', Email).single();
+      const { data } = await supabase.from('users').select('user_id, telegram_id, username, balance, language').eq('inv_id', inv_id).single();
       if (!data) {
         throw new Error('User not found');
       }

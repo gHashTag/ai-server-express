@@ -53,6 +53,9 @@ export const {
   SUPABASE_SERVICE_KEY,
   SUPABASE_SERVICE_ROLE_KEY,
   SYNC_LABS_API_KEY,
+  MERCHANT_LOGIN,
+  PASSWORD2,
+  RESULT_URL2,
 } = process.env;
 
 export const API_URL = isDev ? process.env.NGROK_URL : ORIGIN;
