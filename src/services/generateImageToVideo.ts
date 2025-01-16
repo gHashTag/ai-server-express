@@ -41,7 +41,11 @@ export const generateImageToVideo = async (
       throw new Error(error);
     }
 
-    bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
+    bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...', {
+      reply_markup: {
+        remove_keyboard: true,
+      },
+    });
 
     const runModel = async (model: `${string}/${string}` | `${string}/${string}:${string}`, input: any): Promise<ReplicateResponse> => {
       const result = (await replicate.run(model, { input })) as ReplicateResponse;

@@ -141,12 +141,12 @@ export async function generateModelTraining(
 
     // Ждем завершения тренировки
     let status = currentTraining.status;
+
     while (status !== 'succeeded' && status !== 'failed' && status !== 'canceled') {
       await new Promise(resolve => setTimeout(resolve, 10000));
       const updatedTraining = await replicate.trainings.get(currentTraining.id);
       status = updatedTraining.status;
 
-      bot.telegram.sendMessage(telegram_id, is_ru ? `⏳ Генерация модели ${modelName}...` : `⏳ Generating model ${modelName}...`);
       if (updatedTraining.error) {
         console.error('Training error details from Replicate:', {
           error: updatedTraining.error,
@@ -160,6 +160,7 @@ export async function generateModelTraining(
     }
 
     if (status === 'failed') {
+      console.log('CASE: failed');
       const failedTraining = await replicate.trainings.get(currentTraining.id);
       console.error('Training failed details:', {
         error: failedTraining.error,
@@ -175,6 +176,7 @@ export async function generateModelTraining(
     }
 
     if (status === 'canceled') {
+      console.log('CASE: canceled');
       // Возвращаем средства в случае отмены
       await updateUserBalance(Number(telegram_id), currentBalance + trainingCostInStars);
       bot.telegram.sendMessage(telegram_id, is_ru ? 'Генерация была отменена.' : 'Generation was canceled.', {
@@ -186,10 +188,20 @@ export async function generateModelTraining(
       };
     }
 
-    await updateModelTraining(telegram_id, modelName, {
-      status: 'succeeded',
-      model_url: currentTraining.urls.get,
-    });
+    if (status === 'succeeded') {
+      console.log('CASE: succeeded');
+      console.log('currentTraining.urls.get', currentTraining.urls.get);
+      await updateModelTraining(telegram_id, modelName, {
+        status: 'succeeded',
+        model_url: currentTraining.urls.get,
+      });
+      bot.telegram.sendMessage(
+        telegram_id,
+        is_ru
+          ? `⏳ Модель ${modelName} успешно создана! Результаты работы можно проверить в разделе Нейрофото в главном меню.`
+          : `⏳ Model ${modelName} successfully created! You can check the results of its work in the Neurophoto section in the main menu.`,
+      );
+    }
 
     return {
       model_id: currentTraining.id,

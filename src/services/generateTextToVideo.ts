@@ -26,7 +26,11 @@ export const generateTextToVideo = async (
 
     let output: any;
 
-    bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...');
+    bot.telegram.sendMessage(telegram_id, is_ru ? '⏳ Генерация видео...' : '⏳ Generating video...', {
+      reply_markup: {
+        remove_keyboard: true,
+      },
+    });
 
     if (videoModel === 'haiper') {
       const input = {
