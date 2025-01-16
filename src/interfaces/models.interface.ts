@@ -1,1 +1,1 @@
-export type VideoModel = 'minimax' | 'haiper' | 'ray' | 'i2vgen-xl';
+export type VideoModel = 'minimax' | 'haiper' | 'ray' | 'i2vgen-xl'

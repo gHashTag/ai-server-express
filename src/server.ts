@@ -1,16 +1,16 @@
-import dotenv from 'dotenv';
+import dotenv from 'dotenv'
 
 // Загружаем переменные окружения из .env файла
-dotenv.config();
-import 'reflect-metadata';
-import { App } from '@/app';
+dotenv.config()
+import 'reflect-metadata'
+import { App } from '@/app'
 
-import { ValidateEnv } from '@utils/validateEnv';
+import { ValidateEnv } from '@utils/validateEnv'
 
-import { routes } from './routes';
+import { routes } from './routes'
 
-ValidateEnv();
+ValidateEnv()
 
-const app = new App(routes);
+const app = new App(routes)
 
-app.listen();
+app.listen()

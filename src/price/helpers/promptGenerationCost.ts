@@ -1,3 +1,3 @@
-import { calculateCostInStars } from './calculateCostInStars';
+import { calculateCostInStars } from './calculateCostInStars'
 
-export const promptGenerationCost = calculateCostInStars(0.048);
+export const promptGenerationCost = calculateCostInStars(0.048)

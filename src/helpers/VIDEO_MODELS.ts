@@ -1,4 +1,4 @@
-import { VideoModel } from '@/interfaces';
+import { VideoModel } from '@/interfaces'
 
 // Определяем базовую стоимость для каждой модели
 export const VIDEO_MODELS: Record<VideoModel, number> = {
@@ -6,4 +6,4 @@ export const VIDEO_MODELS: Record<VideoModel, number> = {
   haiper: 0.05,
   ray: 0.45,
   'i2vgen-xl': 0.45,
-};
+}

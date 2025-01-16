@@ -1,18 +1,22 @@
-import { Router } from 'express';
+import { Router } from 'express'
 
-import { UploadController } from '@/controllers/upload.controller';
-import { fileUpload } from '@/utils/fileUpload';
+import { UploadController } from '@/controllers/upload.controller'
+import { fileUpload } from '@/utils/fileUpload'
 export class UploadRoute {
-  public path = '/upload';
-  public router: Router = Router();
-  private uploadController = new UploadController();
+  public path = '/upload'
+  public router: Router = Router()
+  private uploadController = new UploadController()
 
   constructor() {
-    console.log('CASE: UploadRoute');
-    this.initializeRoutes();
+    console.log('CASE: UploadRoute')
+    this.initializeRoutes()
   }
 
   private initializeRoutes() {
-    this.router.post(this.path, fileUpload.single('file'), this.uploadController.uploadFile);
+    this.router.post(
+      this.path,
+      fileUpload.single('file'),
+      this.uploadController.uploadFile
+    )
   }
 }

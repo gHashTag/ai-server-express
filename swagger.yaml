@@ -1,15 +1,15 @@
 tags:
-- name: users
-  description: users API
-- name: generation
-  description: Generation API
+  - name: users
+    description: users API
+  - name: generation
+    description: Generation API
 
 paths:
-# [GET] users
+  # [GET] users
   /users:
     get:
       tags:
-      - users
+        - users
       summary: Find All Users
       responses:
         200:
@@ -17,18 +17,18 @@ paths:
         500:
           description: 'Server Error'
 
-# [POST] users
+    # [POST] users
     post:
       tags:
-      - users
+        - users
       summary: Add User
       parameters:
-      - name: body
-        in: body
-        description: user Data
-        required: true
-        schema:
-          $ref: '#/definitions/users'
+        - name: body
+          in: body
+          description: user Data
+          required: true
+          schema:
+            $ref: '#/definitions/users'
       responses:
         201:
           description: 'Created'
@@ -39,18 +39,18 @@ paths:
         500:
           description: 'Server Error'
 
-# [GET] users/id
+  # [GET] users/id
   /users/{id}:
     get:
       tags:
-      - users
+        - users
       summary: Find User By Id
       parameters:
-      - name: id
-        in: path
-        description: User Id
-        required: true
-        type: integer
+        - name: id
+          in: path
+          description: User Id
+          required: true
+          type: integer
       responses:
         200:
           description: 'OK'
@@ -59,23 +59,23 @@ paths:
         500:
           description: 'Server Error'
 
-# [PUT] users/id
+    # [PUT] users/id
     put:
       tags:
-      - users
+        - users
       summary: Update User By Id
       parameters:
-      - name: id
-        in: path
-        description: user Id
-        required: true
-        type: integer
-      - name: body
-        in: body
-        description: user Data
-        required: true
-        schema:
-          $ref: '#/definitions/users'
+        - name: id
+          in: path
+          description: user Id
+          required: true
+          type: integer
+        - name: body
+          in: body
+          description: user Data
+          required: true
+          schema:
+            $ref: '#/definitions/users'
       responses:
         200:
           description: 'OK'
@@ -86,17 +86,17 @@ paths:
         500:
           description: 'Server Error'
 
-# [DELETE] users/id
+    # [DELETE] users/id
     delete:
       tags:
-      - users
+        - users
       summary: Delete User By Id
       parameters:
-      - name: id
-        in: path
-        description: user Id
-        required: true
-        type: integer
+        - name: id
+          in: path
+          description: user Id
+          required: true
+          type: integer
       responses:
         200:
           description: 'OK'
@@ -105,19 +105,19 @@ paths:
         500:
           description: 'Server Error'
 
-# [POST] generate
+  # [POST] generate
   /generate:
     post:
       tags:
-      - generation
+        - generation
       summary: Generate content
       parameters:
-      - name: body
-        in: body
-        description: Data for content generation
-        required: true
-        schema:
-          $ref: '#/definitions/GenerateRequest'
+        - name: body
+          in: body
+          description: Data for content generation
+          required: true
+          schema:
+            $ref: '#/definitions/GenerateRequest'
       responses:
         200:
           description: Content generated successfully
@@ -180,5 +180,5 @@ definitions:
         description: user Password
 
 schemes:
- - https
- - http
+  - https
+  - http

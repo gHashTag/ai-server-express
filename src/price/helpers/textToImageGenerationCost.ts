@@ -1,3 +1,3 @@
-import { calculateCostInStars } from './calculateCostInStars';
+import { calculateCostInStars } from './calculateCostInStars'
 
-export const textToImageGenerationCost = calculateCostInStars(0.12);
+export const textToImageGenerationCost = calculateCostInStars(0.12)

@@ -1,8 +1,8 @@
-import Replicate from 'replicate';
+import Replicate from 'replicate'
 
 export const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
-});
+})
 
 export const modelPricing: Record<string, string> = {
   'black-forest-labs/flux-1.1-pro': '$0.040 / image',
@@ -32,7 +32,7 @@ export const modelPricing: Record<string, string> = {
   'stability-ai/stable-diffusion-3.5-large': '$0.065 / image',
   'stability-ai/stable-diffusion-3.5-large-turbo': '$0.040 / image',
   'stability-ai/stable-diffusion-3.5-medium': '$0.035 / image',
-};
+}
 
 // interface ModelConfig {
 //   key: string;

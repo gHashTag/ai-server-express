@@ -1,17 +1,30 @@
-import { supabase } from '@/core/supabase';
+import { supabase } from '@/core/supabase'
 
-export const incrementBalance = async ({ telegram_id, amount }: { telegram_id: string; amount: number }) => {
-  const { data, error } = await supabase.from('users').select('balance').eq('telegram_id', telegram_id).single();
+export const incrementBalance = async ({
+  telegram_id,
+  amount,
+}: {
+  telegram_id: string
+  amount: number
+}) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('balance')
+    .eq('telegram_id', telegram_id)
+    .single()
 
   if (error || !data) {
-    throw new Error('Не удалось получить текущий баланс');
+    throw new Error('Не удалось получить текущий баланс')
   }
 
-  const newBalance = data.balance + amount;
+  const newBalance = data.balance + amount
 
-  const { error: updateError } = await supabase.from('users').update({ balance: newBalance }).eq('telegram_id', telegram_id.toString());
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({ balance: newBalance })
+    .eq('telegram_id', telegram_id.toString())
 
   if (updateError) {
-    throw new Error('Не удалось обновить баланс');
+    throw new Error('Не удалось обновить баланс')
   }
-};
+}

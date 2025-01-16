@@ -1,3 +1,3 @@
-import { calculateCostInStars } from './calculateCostInStars';
+import { calculateCostInStars } from './calculateCostInStars'
 
-export const imageNeuroGenerationCost = calculateCostInStars(0.12);
+export const imageNeuroGenerationCost = calculateCostInStars(0.12)

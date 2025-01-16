@@ -1,35 +1,46 @@
-import { WEBHOOK_URL } from '@/config';
-import { setSyncLabsVideo } from '@/core/supabase';
-import axios, { AxiosResponse } from 'axios';
+import { WEBHOOK_URL } from '@/config'
+import { setSyncLabsVideo } from '@/core/supabase'
+import axios, { AxiosResponse } from 'axios'
 
-export type LipSyncStatus = 'CANCELED' | 'COMPLETED' | 'FAILED' | 'PENDING' | 'PROCESSING' | 'REJECTED';
+export type LipSyncStatus =
+  | 'CANCELED'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'REJECTED'
 
 export interface LipSyncResponse {
-  id: string;
-  createdAt: string;
-  status: LipSyncStatus;
-  model: string;
+  id: string
+  createdAt: string
+  status: LipSyncStatus
+  model: string
   input: Array<{
-    url: string;
-    type: string;
-  }>;
-  webhookUrl: string;
+    url: string
+    type: string
+  }>
+  webhookUrl: string
   options: {
-    output_format: string;
-  };
-  outputUrl: string | null;
-  outputDuration: number | null;
-  error: string | null;
+    output_format: string
+  }
+  outputUrl: string | null
+  outputDuration: number | null
+  error: string | null
 }
 
 interface LipSyncError {
-  message: string;
+  message: string
 }
 
-type LipSyncResult = LipSyncResponse | LipSyncError;
+type LipSyncResult = LipSyncResponse | LipSyncError
 
-export async function generateLipSync(telegram_id: string, video: string, audio: string, is_ru: boolean): Promise<LipSyncResult> {
-  const url = 'https://api.sync.so/v2/generate';
+export async function generateLipSync(
+  telegram_id: string,
+  video: string,
+  audio: string,
+  is_ru: boolean
+): Promise<LipSyncResult> {
+  const url = 'https://api.sync.so/v2/generate'
   const body = {
     model: 'lipsync-1.9.0-beta',
     input: [
@@ -46,39 +57,43 @@ export async function generateLipSync(telegram_id: string, video: string, audio:
       output_format: 'mp4',
     },
     webhookUrl: WEBHOOK_URL,
-  };
+  }
 
-  console.log(body, 'body');
+  console.log(body, 'body')
 
   try {
-    const response: AxiosResponse<LipSyncResponse> = await axios.post(url, body, {
-      headers: {
-        'x-api-key': process.env.SYNC_LABS_API_KEY as string,
-        'Content-Type': 'application/json',
-      },
-    });
+    const response: AxiosResponse<LipSyncResponse> = await axios.post(
+      url,
+      body,
+      {
+        headers: {
+          'x-api-key': process.env.SYNC_LABS_API_KEY as string,
+          'Content-Type': 'application/json',
+        },
+      }
+    )
 
-    console.log(response.data, 'response.data');
+    console.log(response.data, 'response.data')
     if (response.data?.id) {
-      const videoId = response.data.id;
-      await setSyncLabsVideo(telegram_id, videoId, is_ru);
+      const videoId = response.data.id
+      await setSyncLabsVideo(telegram_id, videoId, is_ru)
 
       if (response.status === 200) {
-        return response.data;
+        return response.data
       } else {
-        console.error(`Error: ${response.status} ${response.statusText}`);
-        return { message: 'Error generating lip sync' };
+        console.error(`Error: ${response.status} ${response.statusText}`)
+        return { message: 'Error generating lip sync' }
       }
     } else {
-      console.error('No video ID found in response');
-      return { message: 'No video ID found in response' };
+      console.error('No video ID found in response')
+      return { message: 'No video ID found in response' }
     }
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error('API Error:', error.response?.data || error.message);
+      console.error('API Error:', error.response?.data || error.message)
     } else {
-      console.error('Unexpected error:', error);
+      console.error('Unexpected error:', error)
     }
-    return { message: 'Error occurred while generating lip sync' };
+    return { message: 'Error occurred while generating lip sync' }
   }
 }

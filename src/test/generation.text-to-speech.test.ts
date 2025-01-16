@@ -1,24 +1,24 @@
-import request from 'supertest';
-import { App } from '@/app';
-import { GenerationRoute } from '@routes/generation.route';
-import { generateSpeech } from '@/services/generateSpeech';
-import { BOT_TOKEN } from '@/config';
+import request from 'supertest'
+import { App } from '@/app'
+import { GenerationRoute } from '@routes/generation.route'
+import { generateSpeech } from '@/services/generateSpeech'
+import { BOT_TOKEN } from '@/config'
 
 jest.mock('@/services/generateSpeech', () => ({
   generateSpeech: jest.fn(),
-}));
+}))
 
 describe('POST /text-to-speech', () => {
-  const generationRoute = new GenerationRoute();
-  const app = new App([generationRoute]);
+  const generationRoute = new GenerationRoute()
+  const app = new App([generationRoute])
 
   beforeAll(() => {
-    app.listen();
-  });
+    app.listen()
+  })
 
   afterAll(done => {
-    app.close(done);
-  });
+    app.close(done)
+  })
 
   it('should return 200 and start processing when valid data is provided', async () => {
     const requestBody = {
@@ -27,33 +27,37 @@ describe('POST /text-to-speech', () => {
       telegram_id: 123456789,
       username: 'testuser',
       is_ru: true,
-    };
+    }
 
-    (generateSpeech as jest.Mock).mockResolvedValue({
+    ;(generateSpeech as jest.Mock).mockResolvedValue({
       audioUrl: `https://api.telegram.org/file/bot${BOT_TOKEN}/voice/file_74.oga`,
-    });
+    })
 
-    const response = await request(app.getServer()).post('/generate/text-to-speech').send(requestBody);
+    const response = await request(app.getServer())
+      .post('/generate/text-to-speech')
+      .send(requestBody)
 
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('message', 'Processing started');
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveProperty('message', 'Processing started')
 
     expect(generateSpeech).toHaveBeenCalledWith({
       text: requestBody.text,
       voice_id: requestBody.voice_id,
       telegram_id: requestBody.telegram_id,
       is_ru: requestBody.is_ru,
-    });
-  });
+    })
+  })
 
   it('should return 400 when required fields are missing', async () => {
     const requestBody = {
       // Оставьте поля пустыми, чтобы вызвать ошибку
-    };
+    }
 
-    const response = await request(app.getServer()).post('/generate/text-to-speech').send(requestBody);
+    const response = await request(app.getServer())
+      .post('/generate/text-to-speech')
+      .send(requestBody)
 
-    expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message', 'Text is required');
-  });
-});
+    expect(response.status).toBe(400)
+    expect(response.body).toHaveProperty('message', 'Text is required')
+  })
+})

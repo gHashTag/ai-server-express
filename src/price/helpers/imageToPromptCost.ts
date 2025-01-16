@@ -1,3 +1,3 @@
-import { calculateCostInStars } from './calculateCostInStars';
+import { calculateCostInStars } from './calculateCostInStars'
 
-export const imageToPromptCost = calculateCostInStars(0.03);
+export const imageToPromptCost = calculateCostInStars(0.03)
