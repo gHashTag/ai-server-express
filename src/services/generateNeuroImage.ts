@@ -136,7 +136,8 @@ export async function generateNeuroImage(
             ],
             [{ text: is_ru ? '🏠 Главное меню' : '🏠 Main menu' }],
           ],
-          resize_keyboard: false,
+          resize_keyboard: true,
+          one_time_keyboard: false,
         },
       }
     )
