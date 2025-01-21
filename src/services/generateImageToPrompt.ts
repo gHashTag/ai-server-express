@@ -86,7 +86,16 @@ export async function generateImageToPrompt(
             await bot.telegram.sendMessage(
               telegram_id,
               '```\n' + caption + '\n```',
-              { parse_mode: 'MarkdownV2' }
+              {
+                parse_mode: 'MarkdownV2',
+                reply_markup: {
+                  keyboard: [
+                    [{ text: is_ru ? '🏠 Главное меню' : '🏠 Main menu' }],
+                  ],
+                  resize_keyboard: true,
+                  one_time_keyboard: false,
+                },
+              }
             )
 
             await sendBalanceMessage(
