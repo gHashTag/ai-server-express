@@ -16,7 +16,13 @@ export class PaymentSuccessController {
     try {
       const { OutSum, InvId, SignatureValue, Culture } = req.query
       console.log('req.query', req.query)
-      console.log(OutSum, InvId, SignatureValue, Culture)
+      console.log(
+        'OutSum, InvId, SignatureValue, Culture',
+        OutSum,
+        InvId,
+        SignatureValue,
+        Culture
+      )
 
       const calculatedSignature = md5(
         `${this.merchantLogin}:${OutSum}:${InvId}:${encodeURIComponent(
