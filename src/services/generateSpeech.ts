@@ -57,7 +57,18 @@ export const generateSpeech = async ({
 
       writeStream.on('finish', () => {
         const audio = { source: audioUrl }
-        bot.telegram.sendAudio(telegram_id, audio as InputFile)
+        bot.telegram.sendAudio(telegram_id, audio as InputFile, {
+          reply_markup: {
+            keyboard: [
+              [
+                {
+                  text: is_ru ? '🎙️ Текст в голос' : '🎙️ Текст в голос',
+                },
+                { text: is_ru ? '🏠 Главное меню' : '🏠 Main menu' },
+              ],
+            ],
+          },
+        })
         sendBalanceMessage(
           telegram_id,
           balanceCheck.newBalance,
