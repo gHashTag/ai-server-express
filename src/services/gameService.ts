@@ -7,18 +7,32 @@ import {
   createHistory,
 } from '@/core/supabase'
 
+const directionMap: { [key: string]: { ru: string; en: string } } = {
+  'stop 🛑': { ru: 'Стоп 🛑', en: 'Stop 🛑' },
+  'стоп 🛑': { ru: 'Стоп 🛑', en: 'Stop 🛑' },
+  'arrow 🏹': { ru: 'Стрела 🏹', en: 'Arrow 🏹' },
+  'стрела 🏹': { ru: 'Стрела 🏹', en: 'Arrow 🏹' },
+  'snake 🐍': { ru: 'Змея 🐍', en: 'Snake 🐍' },
+  'змея 🐍': { ru: 'Змея 🐍', en: 'Snake 🐍' },
+  'win 🕉': { ru: 'Победа 🕉', en: 'Win 🕉' },
+  'победа 🕉': { ru: 'Победа 🕉', en: 'Win 🕉' },
+  'step 🚶🏼': { ru: 'Шаг 🚶🏼', en: 'Step 🚶🏼' },
+  'шаг 🚶🏼': { ru: 'Шаг 🚶🏼', en: 'Step 🚶🏼' },
+}
+
 export class GameService {
   public async processGameStep(
     roll: number,
     telegram_id: string
-  ): Promise<{ gameStep: GameStep; plan: Plan }> {
+  ): Promise<{ gameStep: GameStep; plan: Plan; direction: string }> {
     const TOTAL = 72
     const WIN_LOKA = 68
     const MAX_ROLL = 6
 
     const userInfo = await getUserByTelegramId(telegram_id)
     console.log('userInfo', userInfo)
-    const result = await getLastStep(telegram_id, userInfo.language_code)
+    const language_code = userInfo.language_code
+    const result = await getLastStep(telegram_id, language_code)
 
     let newLoka = result.loka + roll
     let direction: GameStep['direction']
@@ -127,7 +141,6 @@ export class GameService {
     }
 
     const newPlan = await getPlan(newLoka, userInfo.language_code)
-    console.log('newPlan', newPlan)
 
     await createHistory({
       roll,
@@ -138,6 +151,10 @@ export class GameService {
       is_finished: new_is_finished,
       ...gameStep,
     })
-    return { gameStep, plan: newPlan }
+    return {
+      gameStep,
+      plan: newPlan,
+      direction: directionMap[direction][language_code],
+    }
   }
 }

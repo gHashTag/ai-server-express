@@ -2,7 +2,6 @@ import { supabase } from '.'
 
 export type Plan = {
   short_desc: string
-  image: string
   name: string
 }
 
@@ -14,7 +13,7 @@ export async function getPlan(loka: number, isRu: boolean): Promise<Plan> {
     const name = isRu ? 'name_ru' : 'name'
     const { data, error }: any = await supabase
       .from('plans')
-      .select(`short_desc_${language}, image, ${name}`)
+      .select(`short_desc_${language}, ${name}`)
       .eq('loka', loka)
       .single()
 
@@ -24,7 +23,6 @@ export async function getPlan(loka: number, isRu: boolean): Promise<Plan> {
 
     return {
       short_desc: data[`short_desc_${language}`],
-      image: data.image,
       name: data[name],
     }
   } catch (error) {

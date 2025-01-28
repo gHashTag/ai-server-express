@@ -14,11 +14,7 @@ export class GameController {
     }: {
       roll: number
       telegram_id: string
-      report: string
     } = req.body
-
-    console.log('roll', roll)
-    console.log('telegram_id', telegram_id)
 
     const { gameStep, plan } = await this.gameService.processGameStep(
       roll,

@@ -4,7 +4,7 @@ import { PaymentRoute } from './payment.route'
 import { GenerationRoute } from './generation.route'
 import { UserRoute } from './user.route'
 import { GameRoute } from './leelagame.route'
-import { AiAssistantRoute } from './ ai.assistant.route'
+import { AiAssistantRoute } from './ai.assistant.route'
 
 export const routes = [
   new UploadRoute(),
