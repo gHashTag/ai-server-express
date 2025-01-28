@@ -5,6 +5,7 @@ import {
   getUserByTelegramId,
   Plan,
   createHistory,
+  setLeelaStart,
 } from '@/core/supabase'
 
 const directionMap: { [key: string]: { ru: string; en: string } } = {
@@ -151,6 +152,10 @@ export class GameService {
       is_finished: new_is_finished,
       ...gameStep,
     })
+
+    if (newLoka === WIN_LOKA) {
+      await setLeelaStart(telegram_id, false)
+    }
     return {
       gameStep,
       plan: newPlan,

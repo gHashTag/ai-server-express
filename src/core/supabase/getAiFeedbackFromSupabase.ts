@@ -7,12 +7,19 @@ type GetAiSupabaseFeedbackT = {
   full_name: string
 }
 
+function removeAnnotations(text: string): string {
+  // Регулярное выражение для поиска шаблона аннотаций
+  const annotationPattern = /【\d+:\d+†source】/g
+  // Заменяем все совпадения на пустую строку
+  return text.replace(annotationPattern, '')
+}
+
 export async function getAiFeedbackFromSupabase({
   assistant_id,
   report,
   language_code,
   full_name,
-}: GetAiSupabaseFeedbackT): Promise<{ ai_response: string; annotations: any }> {
+}: GetAiSupabaseFeedbackT): Promise<{ ai_response: string }> {
   if (!assistant_id) throw new Error('Assistant ID is not set')
   if (!report) throw new Error('Report is not set')
   if (!language_code) throw new Error('Language code is not set')
@@ -35,7 +42,7 @@ export async function getAiFeedbackFromSupabase({
     // Step 3: Run the assistant using assistantId
     const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
       assistant_id,
-      instructions: `You are the host of the self-realization game Leela Chakra. You must answer the user's questions and help him in the game. Address the user by their name: ${full_name}, and respond in the language: ${language_code}.`,
+      instructions: `You are the host of the self-realization game Leela Chakra. You must answer the user's questions and help him in the game. Address the user by their name: ${full_name}, and respond in the language: ${language_code}. Please use Markdown tags to highlight the most important parts of your answer. Also, incorporate Vedic and spiritual emojis to enhance the response.1. Headings: Telegram only supports one level of headings. Use ** to highlight text instead of ###. Italics and bold text: For italics, use *italics*.For bold text, use **bold**. Lists: For bulleted lists, use - or *. Make sure each list item starts on a new line. Escaping characters: If you use characters that can be interpreted as Markdown, escape them with a backslash \. Separators: Use --- to create horizontal lines. Emoji and special characters: Emoji can be used to add visual emphasis, but make sure they don't break the markup.`,
     })
 
     // Step 4: Periodically retrieve the run to check its status
@@ -50,8 +57,7 @@ export async function getAiFeedbackFromSupabase({
           console.log(content, 'content')
           if (content && content.type === 'text' && content.text) {
             return {
-              ai_response: content.text.value,
-              annotations: content.text.annotations || [],
+              ai_response: removeAnnotations(content.text.value),
             }
           }
         }

@@ -7,19 +7,19 @@ export class AiAssistantService {
     report: string,
     language_code: string,
     full_name: string
-  ): Promise<{ ai_response: string; annotations: any }> {
-    const { ai_response, annotations } = await getAiFeedbackFromSupabase({
+  ): Promise<{ ai_response: string }> {
+    const { ai_response } = await getAiFeedbackFromSupabase({
       assistant_id,
       report,
       language_code,
       full_name,
     })
-    console.log(annotations, 'annotations')
+
     await updateHistory({
       telegram_id,
       report,
       ai_response,
     })
-    return { ai_response, annotations }
+    return { ai_response }
   }
 }
