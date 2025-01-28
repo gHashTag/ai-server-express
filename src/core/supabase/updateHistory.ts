@@ -18,6 +18,8 @@ export async function updateHistory({
       ai_response,
     })
     .eq('telegram_id', telegram_id)
+    .order('created_at', { ascending: false })
+    .limit(1)
 
   console.log(data, 'data')
 

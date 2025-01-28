@@ -16,11 +16,9 @@ export class GameController {
       telegram_id: string
     } = req.body
 
-    const { gameStep, plan } = await this.gameService.processGameStep(
-      roll,
-      telegram_id
-    )
+    const { gameStep, plan, direction } =
+      await this.gameService.processGameStep(roll, telegram_id)
 
-    res.json({ gameStep, plan })
+    res.json({ gameStep, plan, direction })
   }
 }

@@ -12,14 +12,15 @@ export class AiAssistantController {
     try {
       const { telegram_id, assistant_id, report, language_code, full_name } =
         req.body
-      const ai_response = await this.aiAssistantService.getAiResponse(
-        telegram_id,
-        assistant_id,
-        report,
-        language_code,
-        full_name
-      )
-      res.status(200).json({ ai_response })
+      const { ai_response, annotations } =
+        await this.aiAssistantService.getAiResponse(
+          telegram_id,
+          assistant_id,
+          report,
+          language_code,
+          full_name
+        )
+      res.status(200).json({ ai_response, annotations })
     } catch (error) {
       console.error('Error in getAiResponse:', error)
       res.status(500).json({ message: 'Internal server error' })

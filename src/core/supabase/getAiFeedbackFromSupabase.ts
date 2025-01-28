@@ -12,7 +12,7 @@ export async function getAiFeedbackFromSupabase({
   report,
   language_code,
   full_name,
-}: GetAiSupabaseFeedbackT): Promise<{ ai_response: string }> {
+}: GetAiSupabaseFeedbackT): Promise<{ ai_response: string; annotations: any }> {
   if (!assistant_id) throw new Error('Assistant ID is not set')
   if (!report) throw new Error('Report is not set')
   if (!language_code) throw new Error('Language code is not set')
@@ -29,24 +29,32 @@ export async function getAiFeedbackFromSupabase({
 
     await openai.beta.threads.messages.create(thread.id, {
       role: 'user',
-      content: `response in language: ${language_code} prompt: ${report}`,
+      content: report,
     })
 
     // Step 3: Run the assistant using assistantId
     const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
       assistant_id,
-      instructions: `You are the host of the self-realization game Leela Chakra. You must answer the user's questions and help him in the game.
-You must address the user by his name: ${full_name}`,
+      instructions: `You are the host of the self-realization game Leela Chakra. You must answer the user's questions and help him in the game. Address the user by their name: ${full_name}, and respond in the language: ${language_code}.`,
     })
 
     // Step 4: Periodically retrieve the run to check its status
     if (run.status === 'completed') {
       const messages = await openai.beta.threads.messages.list(run.thread_id)
+      console.log(messages, 'messages')
       for (const message of messages.data.reverse()) {
-        console.log(message, 'message')
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return { ai_response: messages.data.reverse()[0].content[0].text.value }
+        if (message.role === 'assistant') {
+          console.log(message.content, 'message.content')
+
+          const content = message.content[0]
+          console.log(content, 'content')
+          if (content && content.type === 'text' && content.text) {
+            return {
+              ai_response: content.text.value,
+              annotations: content.text.annotations || [],
+            }
+          }
+        }
       }
     } else {
       console.log(run.status)
