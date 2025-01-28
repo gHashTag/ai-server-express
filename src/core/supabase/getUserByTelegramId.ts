@@ -1,11 +1,11 @@
 import { supabase } from '.'
 
-export async function getUserByTelegramId(telegramId: string) {
+export async function getUserByTelegramId(telegram_id: string) {
   try {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('telegram_id', telegramId)
+      .eq('telegram_id', telegram_id)
       .single()
 
     if (error) {
