@@ -1,7 +1,4 @@
-import {
-  ApiImageResponse,
-  GenerationResult,
-} from '@/interfaces/generate.interface'
+import { ApiImageResponse, GenerationResult } from '@/interfaces'
 import { replicate } from '@/core/replicate'
 import { getAspectRatio, savePrompt } from '@/core/supabase'
 import { downloadFile } from '@/helpers/downloadFile'

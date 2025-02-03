@@ -2,7 +2,7 @@ import { replicate } from '../core/replicate'
 import { getAspectRatio, savePrompt } from '../core/supabase/ai'
 
 import { processApiResponse } from '@/helpers/processApiResponse'
-import { GenerationResult } from '@/interfaces/generate.interface'
+import { GenerationResult } from '@/interfaces'
 import { downloadFile } from '@/helpers/downloadFile'
 import bot from '@/core/bot'
 

@@ -5,6 +5,7 @@ import {
   getSelectIzbushkaId,
   setMyWorkspace,
   setPassport,
+  updateUser,
 } from '@/core/supabase'
 import { createOrFetchRoom } from '@/utils/100ms/helpers'
 
@@ -35,6 +36,7 @@ export const createUserService = async (userData: CreateUserT) => {
     telegram_id,
     photo_url,
   } = userData
+  console.log(userData, 'userData')
 
   const { isInviterExist, invitation_codes, inviter_user_id } =
     await checkUsernameCodesByUserId(inviter)
@@ -64,9 +66,19 @@ export const createUserService = async (userData: CreateUserT) => {
   }
 
   if (isUserExist) {
+    // Обновляем данные пользователя, если они изменились
+    await updateUser({
+      user_id,
+      username,
+      first_name,
+      last_name: last_name || '',
+      is_bot,
+      language_code,
+      photo_url,
+    })
     return {
       user_id,
-      message: 'User already exists',
+      message: 'User updated successfully',
     }
   }
 

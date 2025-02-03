@@ -14,37 +14,43 @@ export class PaymentSuccessController {
     res: Response
   ): Promise<void> => {
     try {
-      const { OutSum, InvId, SignatureValue, Culture } = req.query
-      console.log('req.query', req.query)
-      console.log(
-        'OutSum, InvId, SignatureValue, Culture',
-        OutSum,
-        InvId,
-        SignatureValue,
-        Culture
-      )
+      const { body } = req // Получаем тело запроса
+      console.log('Received body:', body)
 
+      // Декодируем JWS
+      const decoded = Buffer.from(body, 'base64').toString('utf-8')
+      console.log('Decoded JWS:', decoded)
+
+      // Парсим JSON
+      const notification = JSON.parse(decoded)
+      console.log('Parsed notification:', notification)
+
+      // Извлекаем данные из уведомления
+      const { header, data } = notification
+      const { shop, opKey, invId, paymentMethod, incSum, state } = data
+
+      // Проверяем подпись
       const calculatedSignature = md5(
-        `${this.merchantLogin}:${OutSum}:${InvId}:${encodeURIComponent(
+        `${this.merchantLogin}:${opKey}:${invId}:${encodeURIComponent(
           this.resultUrl2
         )}:${this.password2}`
       ).toUpperCase()
 
-      if (calculatedSignature !== SignatureValue) {
+      // Проверяем, что подпись из уведомления совпадает с рассчитанной
+      if (calculatedSignature !== header.signature) {
         throw new Error('Invalid signature')
       } else {
         console.log('Signature is valid')
-        await this.paymentService.processPayment(
-          OutSum as string,
-          InvId as string
-        )
+        await this.paymentService.processPayment(incSum, invId) // Используем incSum вместо OutSum
       }
 
       // Ответ Robokassa
-      res.status(200).send(`OK${InvId}`)
+      res.status(200).send(`OK${invId}`)
     } catch (error) {
       console.error('Ошибка обработки успешного платежа:', error)
       res.status(500).send('Internal Server Error')
     }
   }
 }
+
+export default new PaymentSuccessController()
