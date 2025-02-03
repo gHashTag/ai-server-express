@@ -70,7 +70,24 @@ export class App {
     this.app.use(hpp())
     this.app.use(helmet())
     this.app.use(compression())
-    this.app.use(express.json())
+
+    // Добавляем middleware для проверки JSON
+    this.app.use(
+      express.json({
+        verify: (req, res, buf, encoding) => {
+          console.log('req', req)
+          console.log('res', res)
+          console.log('buf', buf.toString())
+          try {
+            JSON.parse(buf.toString())
+          } catch (err) {
+            console.log('err', err)
+            throw new SyntaxError('Invalid JSON')
+          }
+        },
+      })
+    )
+
     this.app.use(express.urlencoded({ extended: true }))
     this.app.use(cookieParser())
     this.app.use(fileUpload.any())

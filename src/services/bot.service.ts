@@ -1,49 +1,31 @@
 // src/services/bot.service.ts
 import { Telegraf } from 'telegraf'
-import { MyContext } from '@/interfaces'
 
 export class BotService {
-  private bots: Telegraf<MyContext>[] = []
+  private bots: Telegraf<any>[] = []
 
-  constructor(app: express.Application) {
-    // Пример использования attachBot
-    this.attachBot(app, process.env.BOT_TOKEN_1, 'token1')
+  constructor(tokens: string[]) {
+    this.initializeBots(tokens)
   }
 
-  private attachBot(app: express.Application, token: string, path: string) {
-    console.log(`Attempting to attach bot with path: /${path}`)
+  private initializeBots(tokens: string[]) {
+    tokens.forEach(token => {
+      const bot = new Telegraf(token)
 
-    if (!token) {
-      console.error(`Token for bot at path /${path} is missing`)
-      return
-    }
+      bot.on('text', ctx => {
+        console.log(ctx.message)
+        ctx.reply('I am one of the bots!')
+      })
 
-    console.log(`Token for bot at path /${path} is present`)
-
-    const bot = new Telegraf<MyContext>(token)
-    app.use(bot.webhookCallback(`/${path}`))
-    console.log(`Webhook callback set for path: /${path}`)
-
-    bot.on('message', ctx => {
-      console.log(`Received message: ${ctx.message.text}`)
-      ctx.reply('Hey')
+      this.bots.push(bot)
+      bot
+        .launch()
+        .then(() => {
+          console.log(`Bot launched with token: ${token}`)
+        })
+        .catch(error => {
+          console.error(`Failed to launch bot with token: ${token}`, error)
+        })
     })
-
-    bot.telegram
-      .setWebhook(`${process.env.WEBHOOK_URL}/${path}`)
-      .then(() => {
-        console.log(
-          `Webhook successfully set for bot at ${process.env.WEBHOOK_URL}/${path}`
-        )
-      })
-      .catch(error => {
-        console.error(
-          `Failed to set webhook for bot at ${process.env.WEBHOOK_URL}/${path}:`,
-          error
-        )
-      })
-
-    this.bots.push(bot)
-    console.log(`Bot added to the list. Total bots: ${this.bots.length}`)
   }
 }
